@@ -1,0 +1,215 @@
+get:
+  summary: Get user details by userId
+  description: Retrieves user details based on the provided userId
+  tags:
+    - User
+  security:
+    - BearerAuth: [] # Apply Bearer token authentication to this endpoint
+  parameters:
+    - in: query
+      name: userId
+      schema:
+        type: string
+        format: uuid
+        example: "068156f2-71e2-4e6d-8753-895491076e67"
+        description: If the user is an admin, they must provide the user ID; otherwise, it will be automatically taken from the token.
+  responses:
+    "200":
+      description: Successfully retrieved user data
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Fetched user details successfully"
+              data:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    example: "068156f2-71e2-4e6d-8753-895491076e67"
+                  firstName:
+                    type: string
+                    example: "Santu"
+                  lastName:
+                    type: string
+                    example: "Pradhan"
+                  email:
+                    type: string
+                    format: email
+                    example: "spradhan@yopmail.com"
+                  roleId:
+                    type: string
+                    format: uuid
+                    example: "17ae7092-4c41-4a02-9256-885573f3b043"
+                  isActive:
+                    type: boolean
+                    example: true
+                  createdAt:
+                    type: string
+                    format: date-time
+                    example: "2025-08-28T14:02:29.255Z"
+                  role:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        example: "17ae7092-4c41-4a02-9256-885573f3b043"
+                      name:
+                        type: string
+                        example: "Seller"
+                      description:
+                        type: string
+                        example: "Seller with limited access"
+                  userDetails:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        example: "cc152f14-0722-496f-a0ca-17366e72de86"
+                      userId:
+                        type: string
+                        format: uuid
+                        example: "068156f2-71e2-4e6d-8753-895491076e67"
+                      agencyName:
+                        type: string
+                        example: "Best Realty"
+                      professionalLicenseId:
+                        type: string
+                        example: "AGT123456"
+                      officeAddress:
+                        type: string
+                        example: "123 Market Street, City"
+                      coordinates:
+                        type: object
+                        properties:
+                          crs:
+                            type: object
+                            properties:
+                              type:
+                                type: string
+                                example: "name"
+                              properties:
+                                type: object
+                                properties:
+                                  name:
+                                    type: string
+                                    example: "EPSG:4326"
+                          type:
+                            type: string
+                            example: "Point"
+                          coordinates:
+                            type: array
+                            items:
+                              type: number
+                            example: [77.209, 28.6139]
+                      logo:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            format: uuid
+                            example: "c5b3719f-2f08-4a70-830d-1f223f22b784"
+                          fieldName:
+                            type: string
+                            example: "logo"
+                          fileName:
+                            type: string
+                            example: "Untitled Diagram (1).jpg"
+                          fileType:
+                            type: string
+                            example: "image"
+                          mimeType:
+                            type: string
+                            example: "image/jpeg"
+                          url:
+                            type: string
+                            example: 'D:\\Project\\Houma\\houma_backend\\gateway\\uploads\\logo-1756718878300-558596483.jpg'
+                          size:
+                            type: integer
+                            example: 85194
+                          uploadedBy:
+                            type: string
+                            format: uuid
+                            example: "068156f2-71e2-4e6d-8753-895491076e67"
+                      website:
+                        type: string
+                        example: null
+                  userDocuments:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          example: "fd37e1ea-ccda-46b2-a872-d16177a3d181"
+                        userId:
+                          type: string
+                          format: uuid
+                          example: "068156f2-71e2-4e6d-8753-895491076e67"
+                        mediaId:
+                          type: string
+                          format: uuid
+                          example: "1d834f0b-6847-4d21-9c36-cdbc09ee1d27"
+                        documentType:
+                          type: string
+                          example: "trade_register_certificate"
+                        status:
+                          type: string
+                          example: "pending"
+                        remarks:
+                          type: string
+                          example: null
+                        media:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              format: uuid
+                              example: "1d834f0b-6847-4d21-9c36-cdbc09ee1d27"
+                            fieldName:
+                              type: string
+                              example: "trade_register_certificate"
+                            fileName:
+                              type: string
+                              example: "Untitled Diagram (1).jpg"
+                            fileType:
+                              type: string
+                              example: "image"
+                            mimeType:
+                              type: string
+                              example: "image/jpeg"
+                            url:
+                              type: string
+                              example: 'D:\\Project\\Houma\\houma_backend\\gateway\\uploads\\trade_register_certificate-1756732076155-266293648.jpg'
+                            size:
+                              type: integer
+                              example: 85194
+                            uploadedBy:
+                              type: string
+                              format: uuid
+                              example: "068156f2-71e2-4e6d-8753-895491076e67"
+    "400":
+      description: Bad request (e.g., invalid userId format)
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/responses/ErrorResponse.yaml"
+    "404":
+      description: User not found
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/responses/ErrorResponse.yaml"
+    "500":
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/responses/ErrorResponse.yaml"

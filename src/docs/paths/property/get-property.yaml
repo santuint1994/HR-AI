@@ -1,0 +1,97 @@
+get:
+  tags:
+    - Property
+  summary: List properties
+  description: |
+    Paginated list of properties with optional search, field selection, and advanced filters.
+    Validation mirrors Celebrate/Joi rules.
+  parameters:
+    - name: page
+      in: query
+      description: Page number (default 1).
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    - name: limit
+      in: query
+      description: Items per page (1–100, default 10).
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+    - name: search
+      in: query
+      description: Free-text search on title and slug (optional; accepts empty or null).
+      required: false
+      schema:
+        type: string
+        nullable: true
+    - name: select
+      in: query
+      description: Comma-separated list of fields to include (letters, numbers, underscores).
+      required: false
+      schema:
+        type: string
+        pattern: "^[a-zA-Z0-9_,]+$"
+      examples:
+        example:
+          value: "id,title,slug,price,status"
+    - name: where
+      in: query
+      description: Stringified JSON object for advanced filtering. It will be parsed server-side.
+      required: false
+      schema:
+        type: string
+      examples:
+        byStatusAndType:
+          summary: Filter by status and propertyType
+          value: '{"propertyType":"ea13c596-6299-463a-b7d6-5c4920acaa23","status": "available","wilayah":"c97e6b9a-802b-44b0-965e-c2735643e54c", "commune": "3f06fbd1-c79b-426e-a40d-104928714375"}'
+  responses:
+    "200":
+      description: List returned
+      content:
+        application/json:
+          examples:
+            success:
+              value:
+                data:
+                  propertyType:
+                    - id: "c5568a9c-db14-4c0b-8745-74b8e7a987ab"
+                      title: "Spacious Family Home"
+                      slug: "spacious-family-home"
+                      listingType: "sell"
+                      status: "available"
+                      price: "250000.00"
+                      createdAt: "2025-09-09T11:46:34.282Z"
+                      updatedAt: "2025-09-09T11:46:34.282Z"
+                    - id: "275f0be2-9d40-4a7a-8a27-20ab268d7e7b"
+                      title: "Modern Apartment Downtown"
+                      slug: "modern-apartment-downtown"
+                      listingType: "rent"
+                      status: "available"
+                      price: "1200.00"
+                      createdAt: "2025-09-09T11:45:39.081Z"
+                      updatedAt: "2025-09-09T11:45:39.081Z"
+                  pagination:
+                    totalItems: 2
+                    totalPages: 1
+                    currentPage: 1
+                    pageSize: 10
+                message: "Property fetched successfully"
+    "400":
+      description: Invalid input
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/responses/ErrorResponse.yaml"
+    "500":
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/responses/ErrorResponse.yaml"
+

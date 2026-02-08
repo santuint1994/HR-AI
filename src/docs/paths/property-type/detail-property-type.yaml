@@ -1,0 +1,73 @@
+get:
+  tags:
+    - Property Type
+  summary: Get property type details by ID
+  operationId: getPropertyTypeDetails
+  parameters:
+    - in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Property Type ID (UUID)
+  responses:
+    "200":
+      description: Property type fetched successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  code:
+                    type: string
+                  label:
+                    type: string
+                  mediaId:
+                    type: string
+                    format: uuid
+                    nullable: true
+                  isActive:
+                    type: boolean
+                  createdBy:
+                    type: string
+                    format: uuid
+                  createdAt:
+                    type: string
+                    format: date-time
+                  updatedAt:
+                    type: string
+                    format: date-time
+              message:
+                type: string
+          example:
+            data:
+              id: ea13c596-6299-463a-b7d6-5c4920acaa23
+              code: apartment
+              label: Apartment
+              mediaId: 3a55a7d9-8b5d-4d31-8c3f-0de6c1c0af21
+              isActive: true
+              createdBy: 068156f2-71e2-4e6d-8753-895491076e67
+              createdAt: "2025-09-15T10:36:37.050Z"
+              updatedAt: "2025-09-16T08:51:12.922Z"
+            message: Property type fetched successfully
+    "400":
+      description: Invalid input
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/responses/ErrorResponse.yaml"
+    "500":
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/responses/ErrorResponse.yaml"
+
+

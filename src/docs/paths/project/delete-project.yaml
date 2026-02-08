@@ -1,0 +1,43 @@
+delete:
+  tags: [Project]
+  summary: Delete project
+  description: Soft delete a project by ID (sets deletedAt timestamp).
+  parameters:
+    - name: id
+      in: path
+      description: Project ID (UUID v4).
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: "c5568a9c-db14-4c0b-8745-74b8e7a987ab"
+  responses:
+    '200':
+      description: Project deleted successfully
+      content:
+        application/json:
+          examples:
+            Deleted:
+              value:
+                data:
+                  id: 'c5568a9c-db14-4c0b-8745-74b8e7a987ab'
+                  deletedAt: '2025-01-15T12:30:45.123Z'
+                message: 'Project deleted successfully'
+    '400':
+      description: Invalid project ID
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/responses/ErrorResponse.yaml"
+    '404':
+      description: Project not found
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/responses/ErrorResponse.yaml"
+    '500':
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/responses/ErrorResponse.yaml"

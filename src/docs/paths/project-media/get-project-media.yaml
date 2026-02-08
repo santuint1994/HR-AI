@@ -1,0 +1,120 @@
+get:
+  tags:
+    - Project Media
+  summary: List project media
+  description: |
+    Retrieves a paginated list of project media with optional filtering.
+    Can filter by project ID, media type, and other criteria.
+  parameters:
+    - name: page
+      in: query
+      description: Page number (default 1).
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    - name: limit
+      in: query
+      description: Items per page (1–100, default 10).
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+    - name: projectId
+      in: query
+      description: Filter media by project ID.
+      required: false
+      schema:
+        type: string
+        format: uuid
+        example: "5ef4c133-968f-4211-90e1-f9f4d2082485"
+    - name: mediaType
+      in: query
+      description: Filter by media type.
+      required: false
+      schema:
+        type: string
+        enum: ["image", "video", "document", "audio"]
+        example: "image"
+    - name: isPrimary
+      in: query
+      description: Filter by primary media status.
+      required: false
+      schema:
+        type: boolean
+        example: true
+    - name: select
+      in: query
+      description: Comma-separated list of fields to include.
+      required: false
+      schema:
+        type: string
+        pattern: "^[a-zA-Z0-9_,]+$"
+      examples:
+        example:
+          value: "id,projectId,mediaType,mediaUrl,caption,isPrimary"
+    - name: where
+      in: query
+      description: Stringified JSON object for advanced filtering.
+      required: false
+      schema:
+        type: string
+      examples:
+        byProjectAndType:
+          summary: Filter by project and media type
+          value: '{"projectId":"5ef4c133-968f-4211-90e1-f9f4d2082485","mediaType":"image"}'
+  responses:
+    "200":
+      description: Project media list retrieved successfully
+      content:
+        application/json:
+          examples:
+            success:
+              value:
+                data:
+                  projectMedia:
+                    - id: "media-123-456-789"
+                      projectId: "5ef4c133-968f-4211-90e1-f9f4d2082485"
+                      mediaType: "image"
+                      mediaUrl: "https://example.com/uploads/project-media-123456789.jpg"
+                      caption: "Main project view from the entrance"
+                      isPrimary: true
+                      altText: "Modern residential complex exterior view"
+                      tags: ["exterior", "entrance", "main-view"]
+                      fileSize: 2048576
+                      mimeType: "image/jpeg"
+                      createdAt: "2025-09-15T09:29:31.766Z"
+                      updatedAt: "2025-09-15T09:29:31.766Z"
+                    - id: "media-987-654-321"
+                      projectId: "5ef4c133-968f-4211-90e1-f9f4d2082485"
+                      mediaType: "video"
+                      mediaUrl: "https://example.com/uploads/project-video-987654321.mp4"
+                      caption: "Project walkthrough video"
+                      isPrimary: false
+                      altText: null
+                      tags: ["video", "walkthrough"]
+                      fileSize: 15728640
+                      mimeType: "video/mp4"
+                      createdAt: "2025-09-15T09:29:31.766Z"
+                      updatedAt: "2025-09-15T09:29:31.766Z"
+                  pagination:
+                    totalItems: 2
+                    totalPages: 1
+                    currentPage: 1
+                    pageSize: 10
+                message: "Project media fetched successfully"
+    "400":
+      description: Invalid input
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/responses/ErrorResponse.yaml"
+    "500":
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/responses/ErrorResponse.yaml"

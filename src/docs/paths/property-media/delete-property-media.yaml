@@ -1,0 +1,40 @@
+delete:
+  tags:
+    - Property
+  summary: Delete property media
+  operationId: deletePropertyMedia
+  parameters:
+    - in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    "200":
+      description: Property media deleted successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: boolean
+              message:
+                type: string
+          example:
+            data: true
+            message: Property media deleted successfully
+    "400":
+      description: Invalid input
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/responses/ErrorResponse.yaml'
+    "500":
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/responses/ErrorResponse.yaml'
+

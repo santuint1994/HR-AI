@@ -1,0 +1,149 @@
+post:
+  summary: Create User Details
+  tags: [User]
+  security:
+    - BearerAuth: []
+  requestBody:
+    required: true
+    content:
+      # ---- Customer via JSON ----
+      application/json:
+        schema:
+          type: object
+          required: [role, userId, wilayahId, communeId, interest]
+          properties:
+            role:
+              type: string
+              enum: [Customer]
+              description: Must be `Customer` for JSON requests
+            userId:
+              type: string
+              enum: [Customer]
+              description: Must be `Customer` for JSON requests
+            wilayahId:
+              type: string
+              format: uuid
+              description: (Customer only) Wilayah ID
+            communeId:
+              type: string
+              format: uuid
+              description: (Customer only) Commune ID
+            interest:
+              type: string
+              enum: [buy, sell]
+              description: (Customer only) Customer's property interest
+        examples:
+          customer:
+            summary: Create a Customer
+            value:
+              userId: '068156f2-71e2-4e6d-8753-895491076e67'
+              role: Customer
+              wilayahId: 'c8f32a77-1c6e-4a3e-9a7e-9d2b2a7f3a11'
+              communeId: 'f9bd0f5a-8f1c-4a58-9e7e-6a0f9d2a4c22'
+              interest: buy
+
+      # ---- Seller & Developer via multipart/form-data ----
+      multipart/form-data:
+        schema:
+          type: object
+          required: [role, userId]
+          properties:
+            role:
+              type: string
+              enum: [Seller, Developer]
+              description: Must be `Seller` or `Developer` for multipart
+              example: Seller
+            userId:
+              type: string  
+              format: uuid
+              description: User ID 
+            # Common fields
+            officeAddress:
+              type: string
+              description: (Seller/Developer) Office address
+              example: '123 Business St, Cityville'
+            coordinates:
+              type: string
+              description: >
+                (Seller/Developer) Coordinates as JSON string:
+                {"lat": <number>, "lng": <number>}
+              example: '{"lat":28.6139,"lng":77.209}'
+            logo:
+              type: string
+              format: binary
+              description: (Seller/Developer) Logo file upload (image)
+
+            # Seller-only fields
+            agencyName:
+              type: string
+              description: (Seller only) Agency name
+              example: 'Prime Realty'
+            professionalLicenseId:
+              type: string
+              description: (Seller only) Professional License ID
+              example: 'LIC-123456'
+
+            # Developer-only fields
+            companyName:
+              type: string
+              description: (Developer only) Company name
+              example: 'Acme DevCo'
+            RCNumber:
+              type: string
+              description: (Developer only) Registration number
+              example: 'RC-987654'
+            website:
+              type: string
+              description: (Developer only) Website URL
+              example: 'https://acme.dev'
+        encoding:
+          coordinates:
+            contentType: application/json
+        examples:
+          seller:
+            summary: Create a Seller (multipart)
+            value:
+              role: Seller
+              agencyName: 'Prime Realty'
+              professionalLicenseId: 'LIC-123456'
+              officeAddress: '123 Business St, Cityville'
+              coordinates: '{"lat":28.6139,"lng":77.209}'
+              # logo uploaded via file input
+          developer:
+            summary: Create a Developer (multipart)
+            value:
+              role: Developer
+              companyName: 'Acme DevCo'
+              RCNumber: 'RC-987654'
+              officeAddress: '456 Tech Park, City'
+              coordinates: '{"lat":28.6139,"lng":77.209}'
+              website: 'https://acme.dev'
+              # logo uploaded via file input
+
+  responses:
+    '201':
+      description: User details created successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                example: '068156f2-71e2-4e6d-8753-895491076e67'
+              message:
+                type: string
+                example: User details have been successfully created
+    '400':
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/responses/ErrorResponse.yaml'
+    '500':
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/responses/ErrorResponse.yaml'

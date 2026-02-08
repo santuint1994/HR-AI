@@ -1,0 +1,112 @@
+get:
+  tags:
+    - Commune
+  summary: Retrieve a list of communes
+  description: Fetches communes with optional pagination and search by name.
+  security:
+    - BearerAuth: []   # Apply Bearer token authentication to this endpoint
+  parameters:
+    - name: limit
+      in: query
+      description: Number of items to return per page.
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+    - name: page
+      in: query
+      description: Page number for pagination.
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    - name: search
+      in: query
+      description: Search term to filter communes by name.
+      required: false
+      schema:
+        type: string
+    - name: wilayaId
+      in: query
+      description: ID of the wilaya to filter communes by.
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    "200":
+      description: A list of communes matching the criteria.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                properties:
+                  communes:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          example: "3f06fbd1-c79b-426e-a40d-104928714375"
+                        nomFR:
+                          type: string
+                          example: "Boukadir"
+                        nomAR:
+                          type: string
+                          example: "بوقادير"
+                        nomEN:
+                          type: string
+                          example: "Boukadir"
+                        wilayaId:
+                          type: string
+                          format: uuid
+                          example: "c97e6b9a-802b-44b0-965e-c2735643e54c"
+                        isActive:
+                          type: boolean
+                          example: true
+                        createdAt:
+                          type: string
+                          format: date-time
+                          example: "2025-08-28T14:00:24.729Z"
+                        updatedAt:
+                          type: string
+                          format: date-time
+                          example: "2025-08-28T14:00:24.729Z"
+                  pagination:
+                    type: object
+                    properties:
+                      totalItems:
+                        type: integer
+                        example: 5
+                      totalPages:
+                        type: integer
+                        example: 1
+                      currentPage:
+                        type: integer
+                        example: 1
+                      pageSize:
+                        type: integer
+                        example: 10
+              message:
+                type: string
+                example: "Communes fetched successfully"
+    "400":
+      description: Bad request due to invalid parameters.
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/responses/ErrorResponse.yaml"
+    "500":
+      description: Internal server error.
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/responses/ErrorResponse.yaml"

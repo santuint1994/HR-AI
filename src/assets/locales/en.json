@@ -1,0 +1,50 @@
+{
+  "success": "Operation completed successfully.",
+
+  "serverError": "An internal server error occurred. Please try again later.",
+  "internalServerError": "An internal server error occurred. Please try again later.",
+
+  "routeNotFound": "The requested endpoint does not exist.",
+  "badRequest": "The request is invalid. Please check the request payload and parameters.",
+  "validationError": "Request validation failed. One or more fields contain invalid values.",
+
+  "unAuthorizedAccess": "Access denied. Authentication is required.",
+  "unauthorized": "Authentication failed. Invalid or missing credentials.",
+  "forbidden": "Access denied. You do not have permission to perform this action.",
+  "notFound": "The requested resource could not be found.",
+  "conflict": "Request could not be completed due to a conflict with the current resource state.",
+
+  "tooManyRequests": "Rate limit exceeded. Please retry after a few minutes.",
+  "noResponseFromServer": "No response received from the server. Please check your connection and try again.",
+  "unexpectedError": "An unexpected error occurred while processing the request.",
+  "requestFailed": "The request failed with an HTTP error status.",
+
+  "tokenNotProvided": "Authentication token is missing.",
+  "invalidToken": "Authentication token is invalid.",
+  "invalidTokenOrWrongConfiguration": "Authentication failed due to invalid token or incorrect configuration.",
+  "tokenExpired": "Authentication token has expired. Please refresh the token and try again.",
+  "unknownAuthenticationError": "Authentication failed due to an unknown error. Please retry.",
+
+  "invalidCommuneOrWilayah": "Invalid location identifier provided (commune/wilayah).",
+  "postedByIsRequired": "Missing required field: postedBy.",
+
+  "propertyLimitExceeded": "Property limit exceeded. Upgrade subscription or renew plan to add more properties.",
+  "projectLimitExceeded": "Project limit exceeded. Upgrade subscription or renew plan to add more projects.",
+  "featuredPropertyLimitExceeded": "Featured property limit exceeded. Upgrade subscription to feature more properties.",
+  "highlightedProjectLimitExceeded": "Highlighted project limit exceeded. Upgrade subscription to highlight more projects.",
+
+  "userIsNotVerified": "User account is not verified. Verification is required before proceeding.",
+
+  "amenityDeletedSuccessfully": "Amenity deleted successfully.",
+  "communeFetchedSuccessfully": "Commune list retrieved successfully.",
+  "contactFormDeletedSuccessfully": "Contact form deleted successfully.",
+  "customerQueryDeletedSuccessfully": "Customer query deleted successfully.",
+  "mortgageQueryDeletedSuccessfully": "Mortgage query deleted successfully.",
+  "propertyDeletedSuccessfully": "Property deleted successfully.",
+  "propertyMediaDeletedSuccessfully": "Property media deleted successfully.",
+  "propertyTypeDeletedSuccessfully": "Property type deleted successfully.",
+  "reportListingDeletedSuccessfully": "Listing report deleted successfully.",
+  "roleDeletedSuccessfully": "Role deleted successfully.",
+  "savedSearchDeletedSuccessfully": "Saved search deleted successfully.",
+  "userDeletedSuccessfully": "User deleted successfully."
+}

@@ -1,0 +1,18 @@
+type: object
+properties:
+  id:
+    type: string
+    format: uuid
+    description: Unique identifier of the role
+    example: c43fe513-74cb-4d6f-824f-0343c64c8cf4
+  name:
+    type: string
+    description: Name of the role
+    example: Seller
+  description:
+    type: string
+    description: Detailed description of the role
+    example: Seller with limited access
+required:
+  - id
+  - name

@@ -1,0 +1,73 @@
+get:
+  tags:
+    - Amenity
+  summary: Get amenity details by ID
+  operationId: getAmenityDetails
+  parameters:
+    - in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Amenity ID (UUID)
+  responses:
+    "200":
+      description: Amenity fetched successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  label:
+                    type: string
+                  value:
+                    type: string
+                  icon:
+                    type: string
+                    nullable: true
+                  mediaId:
+                    type: string
+                    nullable: true
+                  isActive:
+                    type: boolean
+                  createdBy:
+                    type: string
+                    format: uuid
+                  createdAt:
+                    type: string
+                    format: date-time
+                  updatedAt:
+                    type: string
+                    format: date-time
+              message:
+                type: string
+          example:
+            data:
+              id: e33b2ef7-b832-4be6-8e93-61f91916ba7c
+              label: Swimming Pool
+              icon: null
+              mediaId: "a1f9c9e2-6f7a-4f2e-9b5a-9f2a1b3c4d5e"
+              isActive: true
+              createdBy: 068156f2-71e2-4e6d-8753-895491076e67
+              createdAt: "2025-09-15T10:36:37.050Z"
+              updatedAt: "2025-09-16T08:51:12.922Z"
+            message: Amenity fetched successfully
+    "400":
+      description: Invalid input
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/responses/ErrorResponse.yaml"
+    "500":
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/responses/ErrorResponse.yaml"

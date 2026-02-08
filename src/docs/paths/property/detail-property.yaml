@@ -1,0 +1,187 @@
+get:
+  tags:
+    - Property
+  summary: Get property details by ID
+  operationId: getPropertyDetails
+  parameters:
+    - in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Property ID (UUID)
+  responses:
+    '200':
+      description: Property fetched successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  createdBy:
+                    type: string
+                    format: uuid
+                  title:
+                    type: string
+                  slug:
+                    type: string
+                  listingType:
+                    type: string
+                    enum: [sell, rent]
+                  status:
+                    type: string
+                    enum: [draft, available, sold, rented]
+                  furnishingStatus:
+                    type: string
+                    enum: [unfurnished, semi_furnished, furnished]
+                  price:
+                    type: string
+                  bedrooms:
+                    type: integer
+                  bathrooms:
+                    type: integer
+                  areaSqm:
+                    type: string
+                  yearBuilt:
+                    type: integer
+                    nullable: true
+                  floorNumber:
+                    type: integer
+                    nullable: true
+                  totalFloors:
+                    type: integer
+                    nullable: true
+                  parkingAvailable:
+                    type: boolean
+                  descriptionHtml:
+                    type: string
+                  highlights:
+                    type: string
+                    nullable: true
+                  wilayah:
+                    type: string
+                    format: uuid
+                  commune:
+                    type: string
+                    format: uuid
+                  address:
+                    type: string
+                    nullable: true
+                  coordinates:
+                    type: object
+                    properties:
+                      crs:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                          properties:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                      type:
+                        type: string
+                      coordinates:
+                        type: array
+                        items:
+                          type: number
+                        minItems: 2
+                        maxItems: 2
+                  published_at:
+                    type: string
+                    format: date-time
+                    nullable: true
+                  createdAt:
+                    type: string
+                    format: date-time
+                  updatedAt:
+                    type: string
+                    format: date-time
+                  deletedAt:
+                    type: string
+                    format: date-time
+                    nullable: true
+                  amenities:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        label:
+                          type: string
+                        icon:
+                          type: string
+                          nullable: true
+                        isActive:
+                          type: boolean
+                  propertyType:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      code:
+                        type: string
+                      label:
+                        type: string
+                      isActive:
+                        type: boolean
+              message:
+                type: string
+          example:
+            data:
+              id: 1b09cb4b-33eb-4d06-951e-9dff2e4ba17b
+              createdBy: 068156f2-71e2-4e6d-8753-895491076e67
+              title: Modern 4-Bedroom Apartment
+              slug: modern-4-bedroom-apartment
+              listingType: rent
+              status: draft
+              furnishingStatus: semi_furnished
+              price: '1200.00'
+              bedrooms: 3
+              bathrooms: 2
+              areaSqm: '95.50'
+              yearBuilt: 2015
+              floorNumber: 5
+              totalFloors: 12
+              parkingAvailable: true
+              descriptionHtml: '<p>A spacious 3-bedroom apartment with modern finishes, close to metro and schools.</p>'
+              highlights: 'Balcony with city view; 24/7 security; Gym access'
+              wilayah: c97e6b9a-802b-44b0-965e-c2735643e54c
+              commune: 3f06fbd1-c79b-426e-a40d-104928714375
+              address: 123 Main Street
+              coordinates:
+                crs:
+                  type: name
+                  properties:
+                    name: EPSG:4326
+                type: Point
+                coordinates:
+                  - 3.0588
+                  - 36.7538
+              published_at: null
+              createdAt: '2025-09-15T10:36:37.050Z'
+              updatedAt: '2025-09-16T08:51:12.922Z'
+              deletedAt: null
+              amenities:
+                - id: e33b2ef7-b832-4be6-8e93-61f91916ba7c
+                  label: Swimming Pool
+                  icon: null
+                  isActive: true
+              propertyType:
+                id: ea13c596-6299-463a-b7d6-5c4920acaa23
+                code: apartment
+                label: Apartment
+                isActive: true
+            message: Property fetched successfully
+

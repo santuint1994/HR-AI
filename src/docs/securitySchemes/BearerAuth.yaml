@@ -1,0 +1,5 @@
+type: apiKey
+in: header
+name: Authorization
+description: JWT Bearer token for authentication
+example: Bearer <token>

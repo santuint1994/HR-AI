@@ -1,0 +1,40 @@
+type: object
+properties:
+  page:
+    type: integer
+    description: Current page number (1-based)
+    example: 1
+  pageSize:
+    type: integer
+    description: Number of items per page
+    example: 20
+  total:
+    type: integer
+    description: Total number of items across all pages
+    example: 42
+  totalPages:
+    type: integer
+    description: Total number of pages
+    example: 3
+  hasNextPage:
+    type: boolean
+    description: Indicates if another page exists after the current one
+    example: true
+  hasPrevPage:
+    type: boolean
+    description: Indicates if a page exists before the current one
+    example: false
+required:
+  - page
+  - pageSize
+  - total
+  - totalPages
+  - hasNextPage
+  - hasPrevPage
+example:
+  page: 1
+  pageSize: 20
+  total: 42
+  totalPages: 3
+  hasNextPage: true
+  hasPrevPage: false

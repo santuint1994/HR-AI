@@ -1,0 +1,163 @@
+post:
+  tags: [Project]
+  summary: Create a new project
+  description: Creates a new project with location, type, and unit information.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - createdBy
+            - title
+            - slug
+            - wilayah
+            - commune
+            - projectType
+            - totalUnits
+            - unitsAvailable
+            - description
+          properties:
+            createdBy:
+              type: string
+              format: uuid
+              description: ID of the user who created the project.
+              example: a1b2c3d4-e5f6-7890-1234-567890abcdef
+            postedBy:
+              type: string
+              format: uuid
+              nullable: true
+              description: ID of the user who posted the project (if different from createdBy).
+              example: f0e9d8c7-b6a5-4321-fedc-ba9876543210
+            title:
+              type: string
+              description: Title of the project.
+              minLength: 5
+              maxLength: 180
+              example: Modern Residential Complex Downtown
+            slug:
+              type: string
+              description: URL-friendly slug for the project.
+              pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+              minLength: 3
+              maxLength: 250
+              example: modern-residential-complex-downtown
+            wilayah:
+              type: string
+              format: uuid
+              description: Administrative region ID.
+              example: 12345678-abcd-ef01-2345-6789abcdef01
+            commune:
+              type: string
+              format: uuid
+              description: Smaller administrative division ID.
+              example: fedcba98-7654-3210-fedc-ba9876543210
+            address:
+              type: string
+              nullable: true
+              maxLength: 1000
+              description: Full address of the project.
+              example: '123 Main Street, Downtown District'
+            coordinates:
+              type: object
+              nullable: true
+              description: Geographic coordinates of the project.
+              properties:
+                lat:
+                  type: number
+                  format: float
+                  description: Latitude of the project.
+                  example: 28.6139
+                lng:
+                  type: number
+                  format: float
+                  description: Longitude of the project.
+                  example: 77.209
+              required:
+                - lat
+                - lng
+            projectType:
+              type: string
+              enum: ['residential', 'commercial', 'mixed']
+              description: Type of the project.
+              example: residential
+            status:
+              type: string
+              enum: ['draft', 'under_construction', 'completed']
+              description: Current status of the project.
+              default: draft
+              example: draft
+            totalUnits:
+              type: integer
+              description: Total number of units in the project.
+              minimum: 1
+              maximum: 10000
+              example: 150
+            unitsAvailable:
+              type: integer
+              description: Number of units currently available.
+              minimum: 0
+              maximum: 10000
+              example: 45
+            description:
+              type: string
+              description: Detailed description of the project.
+              minLength: 10
+              maxLength: 5000
+              example: 'A modern residential complex featuring luxury apartments with state-of-the-art amenities, located in the heart of downtown.'
+            published_at:
+              type: string
+              format: date-time
+              nullable: true
+              description: Date when the project was published.
+              example: '2025-01-15T10:30:00Z'
+            amenityIds:
+              type: array
+              description: Array of Amenity UUIDs associated with the project.
+              uniqueItems: true
+              maxItems: 100
+              items:
+                type: string
+                format: uuid
+              example: ['a1b2c3d4-e5f6-7890-1234-567890abcdef', 'b2c3d4e5-f6g7-8901-2345-678901bcdefg']
+  responses:
+    '201':
+      description: Project created successfully
+      content:
+        application/json:
+          examples:
+            Created:
+              value:
+                data:
+                  id: '5ef4c133-968f-4211-90e1-f9f4d2082485'
+                  createdBy: '068156f2-71e2-4e6d-8753-895491076e67'
+                  postedBy: null
+                  title: 'Modern Residential Complex Downtown'
+                  slug: 'modern-residential-complex-downtown'
+                  wilayah: 'c97e6b9a-802b-44b0-965e-c2735643e54c'
+                  commune: '3f06fbd1-c79b-426e-a40d-104928714375'
+                  address: '123 Main Street, Downtown District'
+                  coordinates: { 'lat': 28.6139, 'lng': 77.209 }
+                  projectType: 'residential'
+                  status: 'draft'
+                  totalUnits: 150
+                  unitsAvailable: 45
+                  description: 'A modern residential complex featuring luxury apartments with state-of-the-art amenities, located in the heart of downtown.'
+                  published_at: null
+                  createdAt: '2025-01-15T09:29:31.766Z'
+                  updatedAt: '2025-01-15T09:29:31.766Z'
+                  deletedAt: null
+                message: 'Project created successfully'
+    '400':
+      description: Invalid input
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/responses/ErrorResponse.yaml'
+    '500':
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/responses/ErrorResponse.yaml'

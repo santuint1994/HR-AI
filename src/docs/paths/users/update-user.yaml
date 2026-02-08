@@ -1,0 +1,111 @@
+post:
+  summary: Update a user profile
+  description: Updates one or more fields of a user's profile. The request body must contain at least one of the specified fields.
+  tags:
+    - User
+  security:
+    - BearerAuth: []   # Apply Bearer token authentication to this endpoint
+  requestBody:
+    description: User profile data to update.
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            userId:
+              type: string
+              format: uuid
+              description: The unique identifier of the user. If the user is an admin, they must provide the user ID; otherwise, it will be automatically taken from the token.
+              example: "123e4567-e89b-12d3-a456-426614174000"
+            firstName:
+              type: string
+              description: The user's first name.
+              minLength: 2
+              maxLength: 50
+            lastName:
+              type: string
+              description: The user's last name.
+              minLength: 2
+              maxLength: 50
+            password:
+              type: string
+              description: The user's new password.
+              minLength: 8
+              maxLength: 100
+            isActive:
+              type: boolean
+              description: The user's active status.
+          examples:
+            updateFirstName:
+              summary: Update first name only
+              value:
+                userId: "123e4567-e89b-12d3-a456-426614174000"
+                firstName: "John"
+            updateAll:
+              summary: Update multiple fields
+              value:
+                userId: "123e4567-e89b-12d3-a456-426614174000"
+                firstName: "Jane"
+                isActive: true
+                lastName: "Doe"
+  responses:
+    "200":
+      description: User profile updated successfully.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "User profile updated successfully."
+              data:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    example: "068156f2-71e2-4e6d-8753-895491076e67"
+                  firstName:
+                    type: string
+                    example: "Santu"
+                  lastName:
+                    type: string
+                    example: "Pradhan"
+                  email:
+                    type: string
+                    example: "spradhan@yopmail.com"
+                  roleId:
+                    type: string
+                    format: uuid
+                    example: "17ae7092-4c41-4a02-9256-885573f3b043"
+                  isActive:
+                    type: boolean
+                    example: true
+                  createdAt:
+                    type: string
+                    format: date-time
+                    example: "2025-08-28T14:02:29.255Z"
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    example: "2025-09-03T09:53:05.919Z"
+    "400":
+      description: Bad request (e.g., invalid userId format)
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/responses/ErrorResponse.yaml"
+    "404":
+      description: User not found
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/responses/ErrorResponse.yaml"
+    "500":
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/responses/ErrorResponse.yaml"

@@ -1,0 +1,82 @@
+post:
+  tags:
+    - Authentication
+  summary: User Register
+  description: Registers a new user with details like name, email, password, phone, and role.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - firstName
+            - lastName
+            - email
+            - password
+            - phone
+            - roleId
+          properties:
+            firstName:
+              type: string
+              example: Ahmed
+            lastName:
+              type: string
+              example: Benali
+            email:
+              type: string
+              format: email
+              example: radmin@yopmail.com
+            password:
+              type: string
+              format: password
+              example: Asdqwe12!
+            phone:
+              type: string
+              description: Valid Algerian mobile number
+              example: "0551234567"   # ✅ local format
+              # alternative international format:
+              # example: "+213551234567"
+            roleId:
+              type: string
+              format: uuid
+              example: "550e8400-e29b-41d4-a716-446655440000"
+  responses:
+    '200':
+      description: Registration successful, returns JWT token
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: user id
+                    example: "a1b2c3d4-e5f6-7890-abcd-1234567890ef"
+              message:
+                type: string
+                example: Registration successful
+
+    '400':
+      description: Bad request, validation error
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/responses/ErrorResponse.yaml
+
+    '409':
+      description: Conflict, email already exists
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/responses/ErrorResponse.yaml
+
+    '404':
+      description: Role not found
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/responses/ErrorResponse.yaml

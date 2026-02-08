@@ -1,0 +1,288 @@
+post:
+  tags: [Property]
+  summary: Create a new property
+  description: Creates a property listing and optionally links amenities.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - status
+            - createdBy
+            - title
+            - slug
+            - listingType
+            - propertyType
+            - furnishingStatus
+            - bedrooms
+            - bathrooms
+            - areaSqm
+            - parkingAvailable
+            - descriptionHtml
+            - wilayah
+            - commune
+            - address
+            - coordinates
+          properties:
+            status:
+              type: string
+              enum: ["draft", "available", "sold", "rented"] # Order matched Sequelize default and definition
+              description: Current status of the property listing.
+              default: draft # Added default value as per Sequelize model
+              example: draft
+            createdBy:
+              type: string
+              format: uuid
+              description: ID of the user who created the listing.
+              example: a1b2c3d4-e5f6-7890-1234-567890abcdef
+            postedBy: # Added 'postedBy' as it's in the Sequelize model
+              type: string
+              format: uuid
+              nullable: true # Consistent with Sequelize's allowNull: true
+              description: ID of the user who posted the listing (if different from createdBy).
+              example: f0e9d8c7-b6a5-4321-fedc-ba9876543210
+            title:
+              type: string
+              description: Title of the property listing.
+              minLength: 5 # Consistent with Sequelize's len validation
+              maxLength: 180 # Consistent with Sequelize's len validation (was 255)
+              example: Beautiful 3-Bedroom Villa with Garden
+            slug:
+              type: string
+              description: URL-friendly slug for the listing (e.g., beautiful-3-bedroom-villa).
+              pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              minLength: 3 # Consistent with Sequelize's len validation
+              maxLength: 220 # Consistent with Sequelize's len validation
+              example: beautiful-3-bedroom-villa-with-garden
+            listingType:
+              type: string
+              enum: ["sell", "buy"]
+              description: Type of transaction for the property.
+              example: sell
+            propertyType:
+              type: string
+              format: uuid
+              description: ID of the property type (e.g., apartment, house, land).
+              example: f0e9d8c7-b6a5-4321-fedc-ba9876543210
+            minPrice: # Replaced 'price' with 'minPrice' and 'maxPrice'
+              type: number # Changed from string to number (decimal)
+              format: float
+              nullable: true # Consistent with Sequelize's allowNull: true
+              description: The minimum asking price or rental fee for the property.
+              example: 1500000.00
+            maxPrice:
+              type: number # Changed from string to number (decimal)
+              format: float
+              nullable: true # Consistent with Sequelize's allowNull: true
+              description: The maximum asking price or rental fee for the property.
+              example: 2000000.00
+            showPrice: # Added 'showPrice' as it's in the Sequelize model
+              type: boolean
+              default: false
+              description: Whether to display the price publicly.
+              example: true
+            installmentAvailable: # Added 'installmentAvailable'
+              type: boolean
+              default: false
+              description: Indicates if installment payments are available.
+              example: true
+            acceptMortgage: # Added 'acceptMortgage'
+              type: boolean
+              default: false
+              description: Indicates if mortgage is accepted for the property.
+              example: true
+            legalDocuments: # Added 'legalDocuments'
+              type: string
+              enum: ["act", "booklet"]
+              nullable: true
+              description: Type of legal documents available for the property.
+              example: "act"
+            furnishingStatus:
+              type: string
+              enum: ["unfurnished", "semi_furnished", "furnished"]
+              description: Furnishing status of the property.
+              example: furnished
+            bedrooms:
+              type: integer
+              description: Number of bedrooms.
+              minimum: 0
+              maximum: 50 # Consistent with Sequelize's max validation
+              example: 3
+            bathrooms:
+              type: integer
+              description: Number of bathrooms.
+              minimum: 0
+              maximum: 50 # Consistent with Sequelize's max validation
+              example: 2
+            areaSqm:
+              type: number # Changed from string to number (decimal)
+              format: float
+              description: Area of the property in square meters.
+              example: 180.50
+            areaType: # Added 'areaType'
+              type: string
+              nullable: true
+              maxLength: 60
+              default: "sqm"
+              description: Unit for the area (e.g., sqm, sqft).
+              example: "sqm"
+            yearBuilt:
+              type: integer
+              nullable: true
+              description: The year the property was built.
+              minimum: 1800 # Consistent with Sequelize's min validation
+              maximum: 2100 # Adjusted maximum year to be more flexible, but Sequelize uses THIS_YEAR
+              example: 2010
+            floorNumber:
+              type: integer
+              nullable: true
+              description: The specific floor number if applicable (e.g., for apartments).
+              minimum: 0 # Consistent with Sequelize's min validation
+              maximum: 200 # Consistent with Sequelize's max validation
+              example: 5
+            totalFloors:
+              type: integer
+              nullable: true
+              description: Total number of floors in the building.
+              minimum: 0 # Consistent with Sequelize's min validation
+              maximum: 200 # Consistent with Sequelize's max validation
+              example: 10
+            parkingAvailable:
+              type: boolean
+              description: Indicates if parking is available with the property.
+              example: true
+            descriptionHtml:
+              type: string
+              description: Detailed description of the property (HTML allowed).
+              example: "<p>This stunning villa features...</p>"
+            highlights:
+              type: boolean
+              default: false # Consistent with Sequelize's defaultValue
+              description: Indicates if the property is a highlight.
+              example: true
+            wilayah:
+              type: string
+              format: uuid
+              description: Administrative region ID.
+              example: 12345678-abcd-ef01-2345-6789abcdef01
+            commune:
+              type: string
+              format: uuid
+              description: Smaller administrative division ID.
+              example: fedcba98-7654-3210-fedc-ba9876543210
+            address:
+              type: string
+              nullable: true # Consistent with Sequelize's allowNull: true
+              # No maxLength in Sequelize for address, but good to have one for API. Kept 180 as original.
+              maxLength: 180
+              description: Client-facing address (mapped to street).
+              example: "Jl. Sudirman No. 123, Jakarta"
+            contactNumber: # Added 'contactNumber' as it's in the Sequelize model
+              type: array
+              items:
+                type: string
+              nullable: true
+              default: []
+              description: An array of contact phone numbers.
+              example: ["+213555123456", "+213777987654"]
+            coordinates:
+              type: object # Changed from string to object to represent GEOGRAPHY POINT
+              nullable: true # Consistent with Sequelize's allowNull: true
+              description: Geographic coordinates of the property.
+              properties:
+                lat:
+                  type: number
+                  format: float
+                  description: Latitude of the property.
+                  example: 28.6139
+                lng:
+                  type: number
+                  format: float
+                  description: Longitude of the property.
+                  example: 77.209
+              required:
+                - lat
+                - lng
+            amenityIds:
+              type: array
+              description: Array of Amenity UUIDs (unique).
+              uniqueItems: true
+              maxItems: 100
+              items:
+                type: string
+                format: uuid
+            email:
+              type: string
+              format: email
+              description: Email of the property owner.
+              example: john.doe@example.com
+            lift:
+              type: boolean
+              default: false # Consistent with Sequelize's defaultValue
+              description: Indicates if the property has a lift/elevator.
+              example: true
+            newBuild: 
+              type: boolean
+              default: false # Consistent with Sequelize's defaultValue
+              description: Indicates if the property is a new build.
+              example: true
+  responses:
+    "201":
+      description: Created
+      content:
+        application/json:
+          examples:
+            Created:
+              value:
+                data:
+                  id: "5ef4c133-968f-4211-90e1-f9f4d2082485"
+                  status: "draft"
+                  createdBy: "068156f2-71e2-4e6d-8753-895491076e67"
+                  title: "Modern 3-Bedroom Apartment in Downtown"
+                  slug: "modern-3-bedroom-apartment-in-downtown"
+                  listingType: "rent"
+                  propertyType: "ea13c596-6299-463a-b7d6-5c4920acaa23"
+                  minPrice: 1200.00 # Changed to number
+                  maxPrice: null # Example for maxPrice being null
+                  showPrice: false
+                  installmentAvailable: false
+                  acceptMortgage: false
+                  legalDocuments: null
+                  furnishingStatus: "semi_furnished"
+                  bedrooms: 3
+                  bathrooms: 2
+                  areaSqm: 95.50 # Changed to number
+                  areaType: "sqm"
+                  yearBuilt: 2015
+                  floorNumber: 5
+                  totalFloors: 12
+                  parkingAvailable: true
+                  descriptionHtml: "<p>A spacious 3-bedroom apartment with modern finishes, close to metro and schools.</p>"
+                  highlights: false
+                  wilayah: "c97e6b9a-802b-44b0-965e-c2735643e54c"
+                  commune: "3f06fbd1-c79b-426e-a40d-104928714375"
+                  address: "123 Main Street"
+                  contactNumber: []
+                  coordinates: { "lat": 36.7538, "lng": 3.0588 }
+                  updatedAt: "2025-09-15T09:29:31.766Z"
+                  createdAt: "2025-09-15T09:29:31.766Z"
+                  published_at: null
+                  deletedAt: null
+                  email: john.doe@example.com
+                  lift: false
+                  newBuild: false
+                message: "Property created successfully"
+    "400":
+      description: Invalid input
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/responses/ErrorResponse.yaml"
+    "500":
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/responses/ErrorResponse.yaml"

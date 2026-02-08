@@ -1,0 +1,79 @@
+get:
+  tags:
+    - Property
+  summary: Get property media list
+  operationId: getPropertyMedia
+  parameters:
+    - in: query
+      name: page
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    - in: query
+      name: limit
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+    - name: where
+      in: query
+      description: Stringified JSON object for advanced filtering. It will be parsed server-side.
+      required: false
+      schema:
+        type: string
+      examples:
+        byStatusAndType:
+          summary: Filter propertyId
+          value: '{""propertyId"":"ea13c596-6299-463a-b7d6-5c4920acaa23","status": "pending"}'
+  responses:
+    "200":
+      description: Property media fetched successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                properties:
+                  propertyMedia:
+                    type: array
+                    items:
+                      # $ref: '#/components/schemas/PropertyMedia'
+                  pagination:
+                    # $ref: '#/components/schemas/Pagination'
+              message:
+                type: string
+          example:
+            data:
+              propertyMedia:
+                - id: "a1e2b3c4-d5e6-7890-1234-56789abcdef0"
+                  propertyId: "1b09cb4b-33eb-4d06-951e-9dff2e4ba17b"
+                  mediaId: "9a8b7c6d-5e4f-3210-9876-54321fedcba9"
+                  videoLink: null
+                  videoLinkType: null
+                  status: pending
+                  remarks: null
+                  createdAt: "2025-09-19T10:00:00.000Z"
+                  updatedAt: "2025-09-19T10:00:00.000Z"
+              pagination:
+                totalItems: 1
+                totalPages: 1
+                currentPage: 1
+                pageSize: 10
+            message: Property media fetched successfully
+    "400":
+      description: Invalid input
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/responses/ErrorResponse.yaml'
+    "500":
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/responses/ErrorResponse.yaml'
+
