@@ -5,6 +5,7 @@ import { isEmptyObject } from './isEmptyObject';
 import { isUUID } from './isUUID';
 import { extractResumeJSON } from './extractResumeJSON';
 import { extractTextFromFile, normalizeText } from './extractTextFromFile';
+import { generateInterviewQA } from './dynamicInterview';
 
 export {
   JWT,
@@ -15,4 +16,5 @@ export {
   extractResumeJSON,
   extractTextFromFile,
   normalizeText,
+  generateInterviewQA,
 };

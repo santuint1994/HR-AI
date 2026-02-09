@@ -70,10 +70,7 @@ export const ResumeSchema = Joi.object({
     )
     .default([]),
 
-  raw: Joi.object({
-    sourceType: Joi.string().valid('pdf', 'docx', 'txt', 'unknown').required(),
-    text: Joi.string().required(),
-  }).optional(),
+  raw: Joi.string().optional(),
 })
   // keep behavior close to zod: allow extra keys unless you want to forbid them
   .unknown(true);

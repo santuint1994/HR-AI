@@ -3,5 +3,6 @@
  * This allows other modules to import controllers from a single entry point.
  */
 import * as cvParseController from './cv-parse'; // CV Parse controller
+import * as interviewController from './interview'; // Interview controller
 
-export { cvParseController };
+export { cvParseController, interviewController };

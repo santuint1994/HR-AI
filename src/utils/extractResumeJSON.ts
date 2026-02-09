@@ -85,6 +85,7 @@ function buildModelCandidates(): string[] {
   // Prefer fast models first
   const models = [
     env,
+    'gemini-1.5-flash-latest',
     'gemini-1.5-flash',
     'gemini-flash-latest',
     'gemini-1.5-flash-8b',
@@ -100,6 +101,7 @@ function makeLLM(model: string) {
   return new ChatGoogleGenerativeAI({
     model,
     temperature: 0,
+    apiKey: process.env.GOOGLE_API_KEY,
   });
 }
 
@@ -204,11 +206,11 @@ async function extractWithJsonOnly(llm: ChatGoogleGenerativeAI, cvText: string) 
   const safeText = clampText(cvText, 12000);
 
   const res = await llm.invoke([
-    new SystemMessage(
-      systemPrompt() +
-        '\n\nOutput MUST be valid JSON only. No markdown. No extra text. No comments.',
+    new HumanMessage(
+      `SYSTEM INSTRUCTION:\n${systemPrompt()}\n\n` +
+        `Output MUST be valid JSON only. No markdown. No extra text. No comments.\n\n` +
+        `CV TEXT:\n${safeText}`,
     ),
-    new HumanMessage(`CV TEXT:\n${safeText}`),
   ]);
 
   const raw = typeof res.content === 'string' ? res.content : JSON.stringify(res.content);
