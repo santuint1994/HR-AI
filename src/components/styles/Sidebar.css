@@ -1,0 +1,41 @@
+.sidebar {
+  width: 250px;
+  background: #ffffff;
+  padding: 1rem;
+  border-right: 1px solid #ddd;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.menu-item {
+  margin: 1rem 0;
+}
+
+.menu-item button {
+  margin-left: 1rem;
+  padding: 0.3rem 0.6rem;
+  background: #ffc107;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.menu-item button:hover {
+  background: #e0a800;
+}
+
+.sidebar button {
+  display: block;
+  margin: 1rem 0;
+  padding: 0.5rem;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.sidebar button:hover {
+  background: #c82333;
+}

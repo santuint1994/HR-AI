@@ -1,0 +1,35 @@
+.dashboard-container {
+  display: flex;
+  height: 100vh;
+  background-color: #f4f4f9;
+}
+
+.content {
+  flex: 1;
+  padding: 2rem;
+}
+
+.upload-section {
+  margin-top: 1rem;
+}
+
+.upload-section input {
+  margin-right: 1rem;
+}
+
+.upload-section button {
+  padding: 0.5rem 1rem;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.upload-section button:hover {
+  background: #218838;
+}
+
+.upload-section button:disabled {
+  background: #6c757d;
+}
