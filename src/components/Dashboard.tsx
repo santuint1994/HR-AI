@@ -1,26 +1,31 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { useAuth } from '../App';
-import Sidebar from './Sidebar';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState } from 'react'
+// import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../App.tsx'
+import Sidebar from './Sidebar.tsx'
 
-const Dashboard: React.FC = () => {
-  const [file, setFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState('');
-  const { token } = useAuth();
-  const navigate = useNavigate();
+export default function Dashboard() {
+  const [file, setFile] = useState<File | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const { token } = useAuth()
+  // const navigate = useNavigate()
 
   const handleUpload = async () => {
-    if (!file || !token) return
+    if (!file || !token) {
+      setError('Please select a file and ensure you are logged in')
+      return
+    }
+
     setUploading(true)
-    setError('')
+    setError(null)
 
     try {
       const formData = new FormData()
-      formData.append('file', file)
+      formData.append('media', file)
 
-      const res = await fetch('/api/upload', {
+      const res = await fetch('http://localhost:4000/api/v1/cv-parse/create-parse-cv', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -28,30 +33,43 @@ const Dashboard: React.FC = () => {
         body: formData,
       })
 
-      if (!res.ok) throw new Error('Upload failed')
+      if (!res.ok) {
+        const errText = await res.text()
+        throw new Error(`Upload failed: ${res.status} - ${errText}`)
+      }
 
       const data = await res.json()
+      console.log('CV Parse Response:', data)
 
-      // Save questions
-      localStorage.setItem('questionnaires', JSON.stringify(data))
+      // Extract rawText – adjust this path according to your actual response structure
+      const rawText = data?.rawText || ''
 
-      // Save candidate info
+      if (!rawText) {
+        console.warn('No rawText found in response')
+      }
+
+      // Save candidate info including rawText
       const candidateEntry = {
         id: Date.now().toString(),
         filename: file.name,
         uploadedAt: new Date().toISOString(),
-        questionsCount: Array.isArray(data) ? data.length : 0,
+        rawText,                      // ← saved for later interview generation
+        name: data?.data?.name || file.name.split('.')[0] || 'Unknown',
+        // you can save more fields if needed: email, skills, etc.
       }
 
-      const existing = localStorage.getItem('processed_candidates')
-      const list = existing ? JSON.parse(existing) : []
-      list.unshift(candidateEntry) // newest first
+      // Update candidates list in localStorage
+      const existing = localStorage.getItem('processed_candidates') || '[]'
+      const list = JSON.parse(existing)
+      list.unshift(candidateEntry)
       localStorage.setItem('processed_candidates', JSON.stringify(list))
 
-      navigate('/questionnaires')
-    } catch (err) {
-      console.error("Upload error:", err)
-      setError('Failed to process file')
+      alert('Resume parsed successfully!')
+      // Optional: navigate('/candidates') or show success message
+
+    } catch (err: any) {
+      console.error(err)
+      setError(err.message || 'Failed to process resume')
     } finally {
       setUploading(false)
     }
@@ -62,44 +80,35 @@ const Dashboard: React.FC = () => {
       <Sidebar />
 
       <div className="flex-1 p-8 overflow-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-4xl mx-auto"
-        >
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome</h1>
-          <p className="text-gray-600 mb-8">Upload candidate resume / profile to generate interview questions</p>
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">Upload Resume</h1>
+          <p className="text-gray-600 mb-8">Upload candidate resume to parse and extract information</p>
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
             <div className="space-y-6">
               <div className="border-2 border-dashed border-gray-300 rounded-xl p-10 text-center hover:border-blue-400 transition-colors">
                 <input
                   type="file"
-                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+                  id="resume-upload"
                   className="hidden"
-                  id="file-upload"
                   accept=".pdf,.doc,.docx"
+                  onChange={(e) => setFile(e.target.files?.[0] || null)}
                 />
-                <label
-                  htmlFor="file-upload"
-                  className="cursor-pointer"
-                >
-                  <div className="text-blue-600 mb-2">
+                <label htmlFor="resume-upload" className="cursor-pointer">
+                  <div className="text-blue-600 mb-3">
                     <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                     </svg>
                   </div>
                   <p className="text-lg font-medium text-gray-700">
-                    {file ? file.name : 'Click to upload or drag & drop'}
+                    {file ? file.name : 'Click or drag & drop resume'}
                   </p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    PDF, DOC, DOCX up to 10MB
-                  </p>
+                  <p className="text-sm text-gray-500 mt-1">PDF, DOC, DOCX</p>
                 </label>
               </div>
 
               {error && (
-                <div className="p-4 bg-red-50 text-red-700 rounded-lg">
+                <div className="p-4 bg-red-50 text-red-700 rounded-lg text-center">
                   {error}
                 </div>
               )}
@@ -108,25 +117,15 @@ const Dashboard: React.FC = () => {
                 onClick={handleUpload}
                 disabled={!file || uploading}
                 className={`w-full py-3 px-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-medium
-                  hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                  transition-all duration-200 flex items-center justify-center shadow-md
+                  hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-md
                   ${(!file || uploading) ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
-                {uploading ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" viewBox="0 0 24 24">
-                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    </svg>
-                    Processing...
-                  </>
-                ) : 'Generate Interview Questions'}
+                {uploading ? 'Processing...' : 'Parse Resume'}
               </button>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
-  );
-};
-
-export default Dashboard;
+  )
+}
