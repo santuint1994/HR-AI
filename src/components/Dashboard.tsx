@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from 'react'
-// import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../App.tsx'
 import Sidebar from './Sidebar.tsx'
+import { useAuth } from '../App.tsx'
+import { useNavigate } from 'react-router-dom'
 
 export default function Dashboard() {
   const [file, setFile] = useState<File | null>(null)
@@ -10,13 +10,13 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null)
 
   const { token } = useAuth()
-  // const navigate = useNavigate()
+  const navigate = useNavigate()
 
   const handleUpload = async () => {
-    if (!file || !token) {
-      setError('Please select a file and ensure you are logged in')
-      return
-    }
+    // if (!file || !token) {
+    //   setError('Please select a file and ensure you are logged in')
+    //   return
+    // }
 
     setUploading(true)
     setError(null)
@@ -51,10 +51,10 @@ export default function Dashboard() {
       // Save candidate info including rawText
       const candidateEntry = {
         id: Date.now().toString(),
-        filename: file.name,
+        filename: file?.name,
         uploadedAt: new Date().toISOString(),
         rawText,                      // ← saved for later interview generation
-        name: data?.data?.name || file.name.split('.')[0] || 'Unknown',
+        name: data?.data?.name || file?.name.split('.')[0] || 'Unknown',
         // you can save more fields if needed: email, skills, etc.
       }
 
@@ -65,8 +65,11 @@ export default function Dashboard() {
       localStorage.setItem('processed_candidates', JSON.stringify(list))
 
       alert('Resume parsed successfully!')
-      // Optional: navigate('/candidates') or show success message
-
+      navigate('/candidate-form', {
+        state: {
+          parsedData: data,
+        },
+      })
     } catch (err: any) {
       console.error(err)
       setError(err.message || 'Failed to process resume')

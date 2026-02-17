@@ -4,6 +4,8 @@ import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import Candidates from './components/Candidates'
 import Questionnaires from './components/Questionnaires';
+import CandidateForm from './components/CandidateForm';
+import InterviewQuestions from './components/InterviewQuestions';
 
 interface AuthContextType {
   token: string | null;
@@ -54,6 +56,16 @@ const App: React.FC = () => {
             path="/candidates"
             // element={token ? <Candidates /> : <Navigate to="/login" replace />}
             element={token ? <Candidates /> : <Candidates />}
+          />
+          <Route
+            path="/candidate-form"
+            // element={token ? <CandidateForm /> : <Navigate to="/login" replace />}
+            element={token ? <CandidateForm /> : <CandidateForm />}
+          />
+          <Route
+            path="/interview-questions"
+            // element={token ? <InterviewQuestions /> : <Navigate to="/login" replace />}
+            element={token ? <InterviewQuestions /> : <InterviewQuestions />}
           />
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
