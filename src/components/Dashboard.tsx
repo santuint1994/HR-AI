@@ -78,7 +78,7 @@ export default function Dashboard() {
       showToast('Resume uploaded and parsed successfully!', 'success')
     } catch (err: any) {
       console.error(err)
-      setError(err.message || 'Failed to process resume')
+      showToast(err.message || 'Failed to process resume', 'error')
     } finally {
       setUploading(false)
     }
