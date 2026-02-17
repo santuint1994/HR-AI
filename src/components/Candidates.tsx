@@ -14,7 +14,7 @@ interface Candidate {
 
 export default function Candidates() {
   const [candidates, setCandidates] = useState<Candidate[]>([])
-  const [loadingId, setLoadingId] = useState<string | null>(null)
+  // const [loadingId, setLoadingId] = useState<string | null>(null)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -23,6 +23,7 @@ export default function Candidates() {
     if (stored) {
       try {
         const parsed = JSON.parse(stored) as Candidate[]
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCandidates(parsed)
       } catch (e) {
         console.error('Failed to parse candidates from localStorage', e)
@@ -32,63 +33,6 @@ export default function Candidates() {
       setCandidates([])
     }
   }, [])
-
-  const handleGenerateInterview = async (candidate: Candidate) => {
-    if (!candidate.rawText?.trim()) {
-      alert('No raw CV text available for this candidate')
-      return
-    }
-
-    const stackInput = prompt(
-      'Enter required technologies (comma separated):',
-      'Node.js, React, TypeScript'
-    )
-
-    if (!stackInput) return
-
-    const requiredStack = stackInput
-      .split(',')
-      .map(s => s.trim())
-      .filter(Boolean)
-
-    if (requiredStack.length === 0) {
-      alert('Please enter at least one technology')
-      return
-    }
-
-    setLoadingId(candidate.id)
-
-    try {
-      const response = await fetch('http://localhost:4000/api/v1/interview/generate-interview', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // 'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          rawText: candidate.rawText,
-          requiredStack,
-        }),
-      })
-
-      if (!response.ok) {
-        const errText = await response.text()
-        throw new Error(`Failed: ${response.status} - ${errText}`)
-      }
-
-      const result = await response.json()
-      console.log('Interview questions generated:', result)
-
-      // Simple feedback (you can replace with modal / new page later)
-      alert('Interview questions generated!\n\n' + JSON.stringify(result, null, 2))
-
-    } catch (err: any) {
-      console.error(err)
-      alert('Error generating interview questions:\n' + err.message)
-    } finally {
-      setLoadingId(null)
-    }
-  }
 
   return (
     <div className="flex h-screen bg-slate-50">
@@ -135,17 +79,17 @@ export default function Candidates() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-4 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
-                      Filename
+                      File Name
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
-                      Name
+                      Candidate Name
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
-                      Processed
+                      Processed At
                     </th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                    {/* <th className="px-6 py-4 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
                       Actions
-                    </th>
+                    </th> */}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -160,7 +104,7 @@ export default function Candidates() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {new Date(candidate.uploadedAt).toLocaleString()}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-4">
+                      {/* <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-4">
                         <button
                           onClick={() => handleGenerateInterview(candidate)}
                           disabled={loadingId === candidate.id}
@@ -170,7 +114,7 @@ export default function Candidates() {
                         >
                           {loadingId === candidate.id ? 'Generating...' : 'Generate Interview'}
                         </button>
-                      </td>
+                      </td> */}
                     </tr>
                   ))}
                 </tbody>

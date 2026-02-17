@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/components/DynamicCvForm.tsx
 import { useState } from 'react'
+import { useToast } from './toast/ToastContainer'
 
 interface DynamicCvFormProps {
-  data: any // the full API response
+  data: any
 }
 
 export default function DynamicCvForm({ data }: DynamicCvFormProps) {
+  const { showToast } = useToast()
   const [formValues, setFormValues] = useState<Record<string, any>>({})
 
   // Example: adapt this according to your real response structure
@@ -90,7 +92,7 @@ export default function DynamicCvForm({ data }: DynamicCvFormProps) {
         <div className="pt-6 border-t border-gray-200">
           <button
             type="button"
-            onClick={() => alert('Form saved! (implement save logic)')}
+            onClick={() => showToast('Not implemented', 'warning')}
             className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
           >
             Save & Continue

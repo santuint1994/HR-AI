@@ -1,12 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+// src/components/Dashboard.tsx
 import { useState } from 'react'
 import Sidebar from './Sidebar.tsx'
 import { useAuth } from '../App.tsx'
 import { useNavigate } from 'react-router-dom'
+import { useToast } from './toast/ToastContainer.tsx'
 
 export default function Dashboard() {
-  const [file, setFile] = useState<File | null>(null)
+  const { showToast } = useToast()
   const [uploading, setUploading] = useState(false)
+  const [file, setFile] = useState<File | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const { token } = useAuth()
@@ -35,27 +38,25 @@ export default function Dashboard() {
 
       if (!res.ok) {
         const errText = await res.text()
-        throw new Error(`Upload failed: ${res.status} - ${errText}`)
+        showToast(`Upload failed: ${res.status} - ${errText}`, 'error')
       }
 
       const data = await res.json()
-      console.log('CV Parse Response:', data)
 
-      // Extract rawText – adjust this path according to your actual response structure
-      const rawText = data?.rawText || ''
+      // Extract rawText – adjust path based on your actual response structure
+      const rawText = data?.raw || data?.rawText || data?.data?.raw || data?.text || data?.content || ''
 
       if (!rawText) {
-        console.warn('No rawText found in response')
+        showToast('No rawText found in response', 'warning')
       }
 
       // Save candidate info including rawText
       const candidateEntry = {
         id: Date.now().toString(),
-        filename: file?.name,
+        filename: file.name,
         uploadedAt: new Date().toISOString(),
-        rawText,                      // ← saved for later interview generation
-        name: data?.data?.name || file?.name.split('.')[0] || 'Unknown',
-        // you can save more fields if needed: email, skills, etc.
+        rawText,
+        name: data?.data?.name || data?.basics?.fullName || file.name.split('.')[0] || 'Unknown',
       }
 
       // Update candidates list in localStorage
@@ -64,12 +65,17 @@ export default function Dashboard() {
       list.unshift(candidateEntry)
       localStorage.setItem('processed_candidates', JSON.stringify(list))
 
-      alert('Resume parsed successfully!')
+      // Optional: save full parsed data for form page
+      localStorage.setItem('last_cv_parse', JSON.stringify(data))
+
+      // Navigate to form page
       navigate('/candidate-form', {
         state: {
           parsedData: data,
         },
       })
+
+      showToast('Resume uploaded and parsed successfully!', 'success')
     } catch (err: any) {
       console.error(err)
       setError(err.message || 'Failed to process resume')
@@ -85,10 +91,13 @@ export default function Dashboard() {
       <div className="flex-1 p-8 overflow-auto">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Upload Resume</h1>
-          <p className="text-gray-600 mb-8">Upload candidate resume to parse and extract information</p>
+          <p className="text-gray-600 mb-8">
+            Upload candidate resume to parse and extract information
+          </p>
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
             <div className="space-y-6">
+              {/* File input */}
               <div className="border-2 border-dashed border-gray-300 rounded-xl p-10 text-center hover:border-blue-400 transition-colors">
                 <input
                   type="file"
@@ -116,14 +125,42 @@ export default function Dashboard() {
                 </div>
               )}
 
+              {/* Parse Resume Button with inline loader */}
               <button
                 onClick={handleUpload}
-                disabled={!file || uploading}
-                className={`w-full py-3 px-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-medium
-                  hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-md
-                  ${(!file || uploading) ? 'opacity-60 cursor-not-allowed' : ''}`}
+                disabled={uploading || !file}
+                className={`w-full py-3 px-6 rounded-lg font-medium text-white transition-all flex items-center justify-center gap-3 shadow-md
+                  ${uploading || !file
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700'}`}
               >
-                {uploading ? 'Processing...' : 'Parse Resume'}
+                {uploading ? (
+                  <>
+                    <svg
+                      className="animate-spin h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                    Parsing Resume...
+                  </>
+                ) : (
+                  'Parse Resume'
+                )}
               </button>
             </div>
           </div>
