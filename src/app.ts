@@ -58,7 +58,7 @@ export const createApp = (): Application => {
   app.use(logConf);
 
   // Connect to SQL database
-  dbConnect();
+  // dbConnect();
 
   // Static uploads - be careful exposing user uploads publicly
   // Consider putting this behind auth or serving via CDN with safe headers.
