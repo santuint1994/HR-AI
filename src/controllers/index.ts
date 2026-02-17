@@ -4,5 +4,6 @@
  */
 import * as cvParseController from './cv-parse'; // CV Parse controller
 import * as interviewController from './interview'; // Interview controller
+import * as candidateController from './candidate'; // Candidate controller
 
-export { cvParseController, interviewController };
+export { cvParseController, interviewController, candidateController };
