@@ -1,6 +1,7 @@
 import { envs } from '@config/env';
 import { logger } from '@config/logger';
 import { Sequelize, Options } from 'sequelize';
+import { initModels } from '@models/index';
 
 // const isProduction = envs.env === 'production';
 
@@ -39,27 +40,14 @@ const sequelizeOptions: Options = {
 };
 
 export const sequelize = new Sequelize(sequelizeOptions);
-
-const enablePostGIS = async () => {
-  try {
-    await sequelize.query(`CREATE EXTENSION IF NOT EXISTS postgis;`);
-    logger.info('🌍 PostGIS extension enabled.');
-  } catch (error) {
-    logger.error(`⚠️ Failed to enable PostGIS: ${error}`);
-    throw error;
-  }
-};
+// Ensure all models/associations are registered before sync/auth queries run.
+initModels(sequelize);
 
 export const connect = async (retries = 3, delay = 2000): Promise<void> => {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       await sequelize.authenticate();
       logger.info(`✅ ${dialect} DB connection established.`);
-
-      // Enable PostGIS once DB connection is established
-      if (dialect === 'postgres') {
-        await enablePostGIS();
-      }
 
       if (envs.db.sync) {
         await sequelize.sync({ alter: true });

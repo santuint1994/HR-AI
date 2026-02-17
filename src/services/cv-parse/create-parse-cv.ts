@@ -1,41 +1,7 @@
-import { UploadedFile } from 'types';
-import { extractTextFromFile, normalizeText, extractResumeJSON } from '@utils/index';
 import { resumeRepository } from '@repositories/index';
-import fs from 'fs/promises';
+import { IResume } from 'types';
 
-export const createParseCv = async <T>(body: T & { files?: { media?: UploadedFile[] } }) => {
-  const file = body.files?.media?.[0];
-
-  if (!file) {
-    throw new Error("No file uploaded. Use form-data key 'file'.");
-  }
-
-  try {
-    const { sourceType, text } = await extractTextFromFile(file.path);
-    console.log(text);
-    const clean = normalizeText(text);
-
-    // very common issue: scanned PDF => almost no text
-    if (clean.length < 80) {
-      throw new Error(
-        'Extracted text is too short. This CV may be a scanned PDF image. OCR is required.',
-      );
-    }
-
-    const json = await extractResumeJSON(clean);
-    json.raw = clean;
-
-    // const resume = await resumeRepository.createResume(json as any);
-    return json;
-  } catch (e: any) {
-    throw new Error(e?.message || 'Parsing failed');
-  } finally {
-    // cleanup uploaded file
-    try {
-      await fs.unlink(file.path);
-    } catch {
-      // ignore
-      throw new Error('File cleanup failed');
-    }
-  }
+export const createParseCv = async (body: IResume) => {
+    const resume = await resumeRepository.createResume(body);
+    return resume;
 };
