@@ -1,11 +1,10 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Sidebar from './Sidebar'
 import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Dialog, Transition } from '@headlessui/react'
 import { Fragment } from 'react'
-import { useToast } from './toast/ToastContainer'
+import { useToast } from './toast/ToastContainer' // adjust path if needed
 
 interface FormData {
   basics: {
@@ -46,18 +45,23 @@ export default function CandidateForm() {
   const navigate = useNavigate()
   const location = useLocation()
   const { showToast } = useToast()
+
   const [formData, setFormData] = useState<FormData | null>(null)
   const [rawText, setRawText] = useState<string>('')
+  const [resumeId, setResumeId] = useState<string>('') // ← will be set after save
   const [generating, setGenerating] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [candidateSaved, setCandidateSaved] = useState(false)
   const [loading, setLoading] = useState(true)
 
-  // Modal state
+  // Modal state for requiredTech
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [requiredStackInput, setRequiredStackInput] = useState<string>('')
-  const [stackError, setStackError] = useState<string | null>(null)
+  const [requiredTech, setRequiredTech] = useState<string>('Node.js, React, TypeScript')
+  const [techError, setTechError] = useState<string | null>(null)
 
-  // Validation states for email & phone (same style as stackError)
+  // Validation for email & phone
   const [emailError, setEmailError] = useState<string | null>(null)
   const [phoneError, setPhoneError] = useState<string | null>(null)
 
@@ -89,14 +93,13 @@ export default function CandidateForm() {
     }
   }, [location.state])
 
-  // Validate email
+  // Validation helpers
   const validateEmail = (value: string): string | null => {
     if (!value.trim()) return 'Email is required'
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     return emailRegex.test(value) ? null : 'Please enter a valid email address'
   }
 
-  // Validate phone (10-digit Indian format, optional +91)
   const validatePhone = (value: string): string | null => {
     if (!value.trim()) return 'Phone number is required'
     const cleaned = value.replace(/\s+/g, '').replace(/\+91/, '').replace(/-/g, '')
@@ -119,20 +122,14 @@ export default function CandidateForm() {
           [key]: value,
         }
 
-        // Live validation
-        if (key === 'email') {
-          setEmailError(validateEmail(value))
-        }
-        if (key === 'phone') {
-          setPhoneError(validatePhone(value))
-        }
+        if (key === 'email') setEmailError(validateEmail(value))
+        if (key === 'phone') setPhoneError(validatePhone(value))
       }
 
       return newData
     })
   }
 
-  // Validate when data loads
   useEffect(() => {
     if (formData?.basics) {
       setEmailError(validateEmail(formData.basics.email || ''))
@@ -140,23 +137,72 @@ export default function CandidateForm() {
     }
   }, [formData])
 
+  const handleSaveCandidate = async () => {
+    if (!formData) return
+
+    setSaving(true)
+    setError(null)
+    setSuccessMessage(null)
+
+    try {
+      const response = await fetch('http://localhost:4000/api/v1/cv-parse/create-parse-cv', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          rawText,
+        }),
+      })
+
+      if (!response.ok) {
+        const errData = await response.json()
+        throw new Error(errData.message || errData.error || 'Failed to save candidate')
+      }
+
+      const saved = await response.json()
+      console.log('Candidate saved:', saved)
+
+      const newResumeId = saved?.data?.id || ''
+      if (newResumeId) {
+        setResumeId(newResumeId)
+      } else {
+        console.warn('No resumeId returned from save candidate API')
+      }
+
+      setSuccessMessage('Candidate saved successfully!')
+      setCandidateSaved(true)
+      showToast('Candidate profile created!', 'success')
+    } catch (err: any) {
+      const errMsg = err.message || 'Failed to save candidate'
+      setError(errMsg)
+      showToast(errMsg, 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const openGenerateModal = () => {
     if (!rawText.trim()) {
       setError('No raw CV text available')
+      showToast('No raw CV text available', 'error')
       return
     }
-    setStackError(null)
+    if (!resumeId) {
+      setError('No resume ID available. Please save candidate first.')
+      showToast('Please save candidate first', 'error')
+      return
+    }
+    setTechError(null)
     setIsModalOpen(true)
   }
 
-  const confirmAndGenerate = () => {
-    const stack = requiredStackInput
-      .split(',')
-      .map(s => s.trim())
-      .filter(Boolean)
+  const confirmAndGenerate = async () => {
+    const tech = requiredTech.trim()
 
-    if (stack.length === 0) {
-      setStackError('Please enter at least one technology')
+    if (!tech) {
+      setTechError('Please enter at least one technology')
       return
     }
 
@@ -164,53 +210,56 @@ export default function CandidateForm() {
     setError(null)
     setIsModalOpen(false)
 
-    fetch('http://localhost:4000/api/v1/interview/generate-interview', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        rawText,
-        requiredStack: stack,
-      }),
-    })
-      .then(res => {
-        if (!res.ok) throw new Error(`API error: ${res.status}`)
-        return res.json()
+    try {
+      const response = await fetch('http://localhost:4000/api/v1/interview/generate-interview', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          resumeId,
+          requiredTech: tech,
+        }),
       })
-      .then(result => {
-        const generatedQuestions = Array.isArray(result)
-          ? result
-          : result.questions ||
-            result.data?.questions ||
-            result.interviewQuestions ||
-            []
 
-        if (!Array.isArray(generatedQuestions) || generatedQuestions.length === 0) {
-          showToast('No questions returned from API', 'error')
-        }
+      if (!response.ok) {
+        const errText = await response.text()
+        console.error(`API error: ${response.status} - ${errText}`)
+        showToast('Interview question generation failed', 'error')
+      }
 
-        localStorage.setItem('last_generated_questions', JSON.stringify(generatedQuestions))
+      const result = await response.json()
 
-        navigate('/interview-questions', {
-          state: {
-            questions: generatedQuestions,
-            candidateName: formData?.basics?.fullName || 'Candidate',
-          },
-        })
+      const generatedQuestions = Array.isArray(result)
+        ? result
+        : result.data?.interviewQuestions ||
+          []
 
-        showToast('Interview questions generated successfully!', 'success')
+      if (!Array.isArray(generatedQuestions) || generatedQuestions.length === 0) {
+        showToast('No questions returned from API', 'error')
+      }
+
+      localStorage.setItem('last_generated_questions', JSON.stringify(generatedQuestions))
+
+      navigate('/interview-questions', {
+        state: {
+          questions: generatedQuestions,
+          candidateName: formData?.basics?.fullName || 'Candidate',
+        },
       })
-      .catch((err: any) => {
-        setError(err.message || 'Failed to generate questions')
-        showToast(err.message || 'Failed to generate questions', 'error')
-      })
-      .finally(() => {
-        setGenerating(false)
-      })
+
+      showToast('Interview questions generated successfully!', 'success')
+    } catch (err: any) {
+      const errMsg = err.message || 'Failed to generate questions'
+      // setError('Interview question generation failed')
+      showToast('Interview question generation failed', 'error')
+      console.error('Generation error:', errMsg)
+    } finally {
+      setGenerating(false)
+    }
   }
 
-//   const isGenerateDisabled = generating || !rawText.trim() || !!emailError || !!phoneError
+  // const isGenerateDisabled = generating || !rawText.trim() || !!emailError || !!phoneError || !candidateSaved
 
   if (loading) {
     return (
@@ -237,17 +286,23 @@ export default function CandidateForm() {
   }
 
   return (
-    <div className="flex h-screen bg-slate-50">
+    <div className="relative flex h-screen bg-slate-50">
       <Sidebar />
 
       <div className="flex-1 p-8 overflow-auto">
         <div className="max-w-5xl mx-auto">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Review & Generate Questions
+            Review Candidate Information
           </h1>
           <p className="text-gray-600 mb-8">
-            Review parsed candidate information and generate interview questions
+            Review parsed data and save before generating interview questions
           </p>
+
+          {successMessage && (
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg">
+              {successMessage}
+            </div>
+          )}
 
           <div className="space-y-10">
             {/* Basic Information */}
@@ -272,8 +327,6 @@ export default function CandidateForm() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50"
                   />
                 </div>
-
-                {/* Email with validation */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Email <span className="text-red-500">*</span>
@@ -285,14 +338,9 @@ export default function CandidateForm() {
                     className={`w-full px-4 py-2 border rounded-lg bg-gray-50 transition-all focus:outline-none focus:ring-2 ${
                       emailError ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-blue-500'
                     }`}
-                    placeholder="Enter email"
                   />
-                  {emailError && (
-                    <p className="mt-1 text-sm text-red-600">{emailError}</p>
-                  )}
+                  {emailError && <p className="mt-1 text-sm text-red-600">{emailError}</p>}
                 </div>
-
-                {/* Phone with validation */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Phone <span className="text-red-500">*</span>
@@ -304,13 +352,9 @@ export default function CandidateForm() {
                     className={`w-full px-4 py-2 border rounded-lg bg-gray-50 transition-all focus:outline-none focus:ring-2 ${
                       phoneError ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-blue-500'
                     }`}
-                    placeholder="Enter 10-digit phone"
                   />
-                  {phoneError && (
-                    <p className="mt-1 text-sm text-red-600">{phoneError}</p>
-                  )}
+                  {phoneError && <p className="mt-1 text-sm text-red-600">{phoneError}</p>}
                 </div>
-
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Summary</label>
                   <textarea
@@ -380,19 +424,72 @@ export default function CandidateForm() {
               )}
             </section>
 
-            {/* Generate Questions Button */}
-            <div className="flex justify-end pt-6">
-              <button
-                type="button"
-                onClick={openGenerateModal}
-                disabled={generating || !rawText.trim() || !!emailError || !!phoneError}
-                className={`px-8 py-3 font-medium rounded-lg transition shadow-md
-                  ${generating || !rawText.trim() || !!emailError || !!phoneError
-                    ? 'bg-gray-400 text-white cursor-not-allowed'
-                    : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
-              >
-                {generating ? 'Generating Questions...' : 'Generate Questions'}
-              </button>
+            {/* Action Buttons */}
+            <div className="flex justify-end pt-6 gap-4">
+              {!candidateSaved && (
+                <button
+                  type="button"
+                  onClick={handleSaveCandidate}
+                  disabled={saving || !!emailError || !!phoneError}
+                  className={`px-8 py-3 font-medium rounded-lg transition shadow-md flex items-center gap-2 ${
+                    saving || !!emailError || !!phoneError
+                      ? 'bg-gray-400 text-white cursor-not-allowed'
+                      : 'bg-green-600 text-white hover:bg-green-700'
+                  }`}
+                >
+                  {saving ? (
+                    <>
+                      <svg
+                        className="animate-spin h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      Saving Candidate...
+                    </>
+                  ) : (
+                    'Save Candidate'
+                  )}
+                </button>
+              )}
+
+              {candidateSaved && (
+                <button
+                  type="button"
+                  onClick={openGenerateModal}
+                  disabled={generating || !rawText.trim() || !!emailError || !!phoneError}
+                  className={`px-8 py-3 font-medium rounded-lg transition shadow-md flex items-center gap-2 ${
+                    generating || !rawText.trim() || !!emailError || !!phoneError
+                      ? 'bg-gray-400 text-white cursor-not-allowed'
+                      : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                  }`}
+                >
+                  {generating ? (
+                    <>
+                      <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      </svg>
+                      Generating...
+                    </>
+                  ) : (
+                    'Generate Interview Questions'
+                  )}
+                </button>
+              )}
             </div>
 
             {/* General error */}
@@ -405,7 +502,34 @@ export default function CandidateForm() {
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Full-page loading overlay during generation */}
+      {generating && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-md w-full mx-4">
+            <svg
+              className="animate-spin h-12 w-12 mx-auto mb-6 text-indigo-600"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
+            </svg>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+              Generating Interview Questions
+            </h3>
+            <p className="text-gray-600">
+              This may take a few seconds. Please wait...
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Modal for requiredTech */}
       <Transition appear show={isModalOpen} as={Fragment}>
         <Dialog as="div" className="relative z-50" onClose={() => setIsModalOpen(false)}>
           <Transition.Child
@@ -433,35 +557,35 @@ export default function CandidateForm() {
               >
                 <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white p-6 md:p-8 text-left align-middle shadow-2xl transition-all">
                   <Dialog.Title as="h3" className="text-2xl font-semibold leading-6 text-gray-900 mb-6">
-                    Required Technologies / Stack
+                    Required Technologies
                   </Dialog.Title>
 
                   <div className="mt-2 space-y-4">
                     <p className="text-gray-600">
-                      Enter the technologies/languages you want the interview questions to focus on (comma separated):
+                      Enter the technology stack you want the interview questions to focus on (comma separated):
                     </p>
 
                     <textarea
-                      value={requiredStackInput}
+                      value={requiredTech}
                       onChange={(e) => {
-                        setRequiredStackInput(e.target.value)
-                        setStackError(null)
+                        setRequiredTech(e.target.value)
+                        setTechError(null)
                       }}
                       placeholder="Node.js, React, TypeScript, AWS, Docker, PostgreSQL, ..."
                       rows={4}
                       className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent resize-none ${
-                        stackError
+                        techError
                           ? 'border-red-500 focus:ring-red-200'
                           : 'border-gray-300 focus:ring-indigo-500'
                       }`}
                     />
 
-                    {stackError && (
-                      <p className="text-sm text-red-600">{stackError}</p>
+                    {techError && (
+                      <p className="text-sm text-red-600">{techError}</p>
                     )}
 
                     <p className="text-xs text-gray-500">
-                      Tip: You can enter one or many (e.g. Node.js, React, GraphQL)
+                      Tip: Enter one or multiple technologies (e.g. Node.js, React, GraphQL)
                     </p>
                   </div>
 
@@ -483,7 +607,7 @@ export default function CandidateForm() {
                           : 'bg-indigo-600 hover:bg-indigo-700'
                       }`}
                     >
-                      {generating ? 'Generating...' : 'Generate Questions'}
+                      {generating ? 'Generating...' : 'Generate Interview Questions'}
                     </button>
                   </div>
                 </Dialog.Panel>
@@ -492,33 +616,6 @@ export default function CandidateForm() {
           </div>
         </Dialog>
       </Transition>
-
-      {/* Full-page loading overlay (already present) */}
-      {generating && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-md w-full mx-4">
-            <svg
-              className="animate-spin h-12 w-12 mx-auto mb-6 text-indigo-600"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              />
-            </svg>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">
-              Generating Interview Questions
-            </h3>
-            <p className="text-gray-600">
-              This may take a few seconds. Please wait...
-            </p>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

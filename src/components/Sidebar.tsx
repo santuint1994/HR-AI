@@ -7,9 +7,16 @@ export default function Sidebar() {
 
   return (
     <div className="w-64 bg-white border-r border-gray-200 shadow-sm flex flex-col">
-      <div className="p-6 border-b border-gray-100">
-        <h2 className="text-xl font-semibold text-gray-800">HR Dashboard</h2>
-      </div>
+    <div className="p-6 border-b border-gray-100 flex items-center gap-4">
+      <img
+        src="/int25yearslogo.png"
+        alt="INT"
+        className="h-12 w-auto object-contain"
+      />
+      <h2 className="text-xl font-bold text-gray-900">
+        HR Dashboard
+      </h2>
+    </div>
 
       <div className="flex-1 p-4">
         <div className="space-y-1">

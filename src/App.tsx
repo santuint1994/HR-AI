@@ -6,6 +6,7 @@ import Candidates from './components/Candidates'
 import Questionnaires from './components/Questionnaires';
 import CandidateForm from './components/CandidateForm';
 import InterviewQuestions from './components/InterviewQuestions';
+import Register from './components/Register';
 
 interface AuthContextType {
   token: string | null;
@@ -44,29 +45,25 @@ const App: React.FC = () => {
           <Route path="/login" element={<Login />} />
           <Route
             path="/dashboard"
-            // element={token ? <Dashboard /> : <Navigate to="/login" replace />}
-            element={token ? <Dashboard /> : <Dashboard />}
+            element={token ? <Dashboard /> : <Navigate to="/login" replace />}
           />
           <Route
             path="/questionnaires"
-            // element={token ? <Questionnaires /> : <Navigate to="/login" replace />}
-            element={token ? <Questionnaires /> : <Questionnaires />}
+            element={token ? <Questionnaires /> : <Navigate to="/login" replace />}
           />
           <Route
             path="/candidates"
-            // element={token ? <Candidates /> : <Navigate to="/login" replace />}
-            element={token ? <Candidates /> : <Candidates />}
+            element={token ? <Candidates /> : <Navigate to="/login" replace />}
           />
           <Route
             path="/candidate-form"
-            // element={token ? <CandidateForm /> : <Navigate to="/login" replace />}
-            element={token ? <CandidateForm /> : <CandidateForm />}
+            element={token ? <CandidateForm /> : <Navigate to="/login" replace />}
           />
           <Route
             path="/interview-questions"
-            // element={token ? <InterviewQuestions /> : <Navigate to="/login" replace />}
-            element={token ? <InterviewQuestions /> : <InterviewQuestions />}
+            element={token ? <InterviewQuestions /> : <Navigate to="/login" replace />}
           />
+          <Route path="/register"element={<Register />} />
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       </Router>

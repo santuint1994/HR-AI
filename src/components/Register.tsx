@@ -1,72 +1,80 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from 'react'
-import { useAuth } from '../App'
 import { useNavigate } from 'react-router-dom'
-import { useToast } from '../components/toast/ToastContainer'
+import { useToast } from '../components/toast/ToastContainer' // Adjust path as per your structure
 
-export default function Login() {
-  const { login } = useAuth()
+export default function Register() {
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
+
   const [loading, setLoading] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
 
-  const navigate = useNavigate()
   const { showToast } = useToast()
+  const navigate = useNavigate()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     // Basic client-side validation
-    if (!email.trim() || !password.trim()) {
-      setFormError('Please enter both email and password')
-      showToast('Both fields are required', 'error')
+    if (!name.trim()) {
+      setFormError('Full name is required')
+      showToast('Full name is required', 'error')
       return
+    }
+
+    if (!email.trim()) {
+      setFormError('Email is required')
+      showToast('Email is required', 'error')
+      return
+    }
+
+    if (!password.trim()) {
+      setFormError('Password is required')
+      showToast('Password is required', 'error')
+      return
+    }
+
+    // Optional: phone can be empty as per your curl example (null is allowed)
+    const payload = {
+      name: name.trim(),
+      email: email.trim(),
+      phone: phone.trim() || null,
+      password,
     }
 
     setFormError(null)
     setLoading(true)
 
     try {
-      const response = await fetch('http://localhost:4000/api/v1/auth/login', {
+      const response = await fetch('http://localhost:4000/api/v1/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+        body: JSON.stringify(payload),
       })
 
       if (!response.ok) {
-        let errMsg = ''
+        let errorMessage = 'Registration failed'
         try {
           const errData = await response.json()
-          errMsg = errData.message || errData.error || `Login failed (${response.status})`
+          errorMessage = errData.message || errData.error || errorMessage
         } catch {
-          errMsg = await response.text() || `Login failed (${response.status})`
+          errorMessage = await response.text() || errorMessage
         }
-        throw new Error(errMsg)
+        console.error(errorMessage)
+        showToast('Registration failed', 'error')
       }
 
-      const res = await response.json()
-
-      const token = res.data?.token || ''
-
-      if (!token) {
-        showToast('No authentication token received from server', 'error')
-        return
-      }
-
-      login(token)
-      showToast(`Welcome back, ${res.data?.user?.name || 'User'}`, 'success')
-      navigate('/dashboard')
+      showToast('Registration successful! Please log in.', 'success')
+      navigate('/login')
     } catch (err: any) {
-      const errorMessage = err.message || 'Something went wrong. Please try again.'
-      // setFormError(errorMessage)
-      showToast('Login failed', 'error')
-      console.error('Login error:', errorMessage)
+      const errorMsg = err.message || 'Something went wrong. Please try again.'
+      setFormError(errorMsg)
+      showToast(errorMsg, 'error')
     } finally {
       setLoading(false)
     }
@@ -78,10 +86,10 @@ export default function Login() {
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="p-8 md:p-10">
             <h2 className="text-3xl font-bold text-center text-gray-900 mb-2">
-              HR Interview System
+              Create Account
             </h2>
             <p className="text-center text-gray-600 mb-8">
-              Sign in to continue
+              Join the HR Interview System
             </p>
 
             {formError && (
@@ -92,8 +100,24 @@ export default function Login() {
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                  Full Name
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  placeholder="Enter your full name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  disabled={loading}
+                  required
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition disabled:opacity-60 disabled:cursor-not-allowed"
+                />
+              </div>
+
+              <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
+                  Email Address
                 </label>
                 <input
                   id="email"
@@ -108,13 +132,28 @@ export default function Login() {
               </div>
 
               <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number (optional)
+                </label>
+                <input
+                  id="phone"
+                  type="tel"
+                  placeholder="Enter phone number"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  disabled={loading}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition disabled:opacity-60 disabled:cursor-not-allowed"
+                />
+              </div>
+
+              <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                   Password
                 </label>
                 <input
                   id="password"
                   type="password"
-                  placeholder="Enter your password"
+                  placeholder="Create a strong password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={loading}
@@ -153,22 +192,23 @@ export default function Login() {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       />
                     </svg>
-                    Signing in...
+                    Creating account...
                   </>
                 ) : (
-                  'Sign In'
+                  'Create Account'
                 )}
               </button>
             </form>
 
-            <div className="mt-6 text-center text-sm">
-              <a href="/register" className="text-indigo-600 hover:underline">
-                Register
-              </a>
-              {/* <span className="mx-3 text-gray-400">•</span>
-              <a href="#" className="text-indigo-600 hover:underline">
-                Contact support
-              </a> */}
+            <div className="mt-8 text-center text-sm text-gray-600">
+              Already have an account?{' '}
+              <button
+                type="button"
+                onClick={() => navigate('/login')}
+                className="text-indigo-600 hover:underline font-medium"
+              >
+                Sign in
+              </button>
             </div>
           </div>
         </div>

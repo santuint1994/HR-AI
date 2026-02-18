@@ -49,7 +49,7 @@ export default function InterviewQuestions() {
     }
 
     setQuestions(loadedQuestions)
-    setCurrentPage(1) // reset to first page when new questions arrive
+    setCurrentPage(1)
   }, [location.state])
 
   const categories = useMemo(() => {
