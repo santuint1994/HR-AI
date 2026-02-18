@@ -16,7 +16,7 @@ export const searchCandidatesHandler = controller(
     const limit =
       Number.isFinite(rawLimit) && rawLimit > 0 && rawLimit <= 100 ? Math.floor(rawLimit) : 10;
 
-    const candidates = await candidateService.searchCandidates(term, page, limit);
+    const candidates = await candidateService.searchResumes(term, page, limit);
     res.json(candidates);
   },
 );
