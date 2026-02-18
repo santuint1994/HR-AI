@@ -1,7 +1,7 @@
 import { signWithHS256 } from '@utils/jwt';
 import { userRepository } from '@repositories/index';
 import { StatusError } from '@config/error/status-error';
-import bcrypt from 'bcrypt';
+import { verifyPassword } from '@utils/hash-password';
 
 export interface LoginResult {
   token: string;
@@ -25,7 +25,7 @@ export const login = async (email: string, password: string): Promise<LoginResul
     throw StatusError.unauthorized('Account is deactivated');
   }
 
-  const isPasswordValid = await bcrypt.compare(password, userData.password);
+  const isPasswordValid = await verifyPassword(password, userData.password);
   if (!isPasswordValid) {
     throw StatusError.unauthorized('Invalid email or password');
   }
