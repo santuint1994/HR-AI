@@ -13,6 +13,9 @@ import resumeExperienceModel from './resume/resume-experience';
 import resumeExperienceHighlightModel from './resume/resume-experience-highlight';
 import resumeProjectModel from './resume/resume-project';
 import resumeProjectHighlightModel from './resume/resume-project-highlight';
+import userModel from './user';
+import interviewModel from './interview';
+import interviewQuestionModel from './interview/interview-question';
 
 export let Resume: ReturnType<typeof resumeModel>;
 export let ResumeBasics: ReturnType<typeof resumeBasicsModel>;
@@ -25,6 +28,9 @@ export let ResumeExperience: ReturnType<typeof resumeExperienceModel>;
 export let ResumeExperienceHighlight: ReturnType<typeof resumeExperienceHighlightModel>;
 export let ResumeProject: ReturnType<typeof resumeProjectModel>;
 export let ResumeProjectHighlight: ReturnType<typeof resumeProjectHighlightModel>;
+export let User: ReturnType<typeof userModel>;
+export let Interview: ReturnType<typeof interviewModel>;
+export let InterviewQuestion: ReturnType<typeof interviewQuestionModel>;
 
 export const initModels = (sequelize: Sequelize) => {
   // Initialize
@@ -39,6 +45,9 @@ export const initModels = (sequelize: Sequelize) => {
   ResumeExperienceHighlight = resumeExperienceHighlightModel(sequelize);
   ResumeProject = resumeProjectModel(sequelize);
   ResumeProjectHighlight = resumeProjectHighlightModel(sequelize);
+  User = userModel(sequelize);
+  Interview = interviewModel(sequelize);
+  InterviewQuestion = interviewQuestionModel(sequelize);
 
   /* =====================================================
      📌 Associations
@@ -125,5 +134,21 @@ export const initModels = (sequelize: Sequelize) => {
     hooks: true,
   });
   ResumeProjectHighlight.belongsTo(ResumeProject, { foreignKey: 'projectId', as: 'project' });
+
+  Resume.hasMany(Interview, {
+    foreignKey: 'resumeId',
+    as: 'interviews',
+    onDelete: 'CASCADE',
+    hooks: true,
+  });
+  Interview.belongsTo(Resume, { foreignKey: 'resumeId', as: 'resume' });
+
+  Interview.hasMany(InterviewQuestion, {
+    foreignKey: 'interviewId',
+    as: 'questions',
+    onDelete: 'CASCADE',
+    hooks: true,
+  });
+  InterviewQuestion.belongsTo(Interview, { foreignKey: 'interviewId', as: 'interview' });
 };
 

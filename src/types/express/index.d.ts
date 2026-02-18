@@ -3,22 +3,9 @@ declare namespace Express {
   interface Request {
     user?: {
       id: string;
-      role: { code: string; id: string };
+      name: string;
       email: string;
-      firstName: string;
-      lastName: string;
-      phone: string;
-      totalActiveProjectsLimit: number;
-      totalActivePropertiesLimit: number;
-      totalActiveProjects?: number;
-      totalActiveProperties?: number;
-      totalActiveFeaturedPropertiesLimit?: number;
-      totalActiveHighlightedProjectsLimit?: number;
-      totalActiveHighlightedProjects?: number;
-      totalActiveFeaturedProperties?: number;
-      isMembershipActive?: boolean;
-      profileVerified?: boolean;
-      documentVerified?: string;
+      phone: string | null;
     } | null;
   }
 }

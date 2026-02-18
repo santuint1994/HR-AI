@@ -1,5 +1,16 @@
 import Joi from 'joi';
 
+/** Request body for POST /generate-interview */
+export const GenerateInterviewSchema = Joi.object({
+  resumeId: Joi.string().uuid().required(),
+  requiredTech: Joi.alternatives()
+    .try(
+      Joi.string().min(1),
+      Joi.array().items(Joi.string().min(1)).min(1),
+    )
+    .required(),
+});
+
 export const InterviewSchema = Joi.object({
   candidateSummary: Joi.string().required(),
 

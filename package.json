@@ -18,13 +18,15 @@
     "prepare": "husky",
     "commit": "git-cz",
     "ca": "npm run compile-api-json",
-    "compile-api-json": "redocly bundle ./src/docs/openapi-v1.yaml -o ./src/docs/openapi-v1-compiled.json"
+    "compile-api-json": "redocly bundle ./src/docs/openapi-v1.yaml -o ./src/docs/openapi-v1-compiled.json",
+    "seed:user": "npx ts-node -r tsconfig-paths/register scripts/seed-user.ts"
   },
   "license": "ISC",
   "dependencies": {
     "@langchain/core": "^1.1.19",
     "@langchain/google-genai": "^2.1.15",
     "axios": "^1.7.3",
+    "bcrypt": "^5.1.1",
     "celebrate": "^15.0.3",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
@@ -49,6 +51,7 @@
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
     "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "^19.2.2",
     "@redocly/cli": "^2.1.0",
