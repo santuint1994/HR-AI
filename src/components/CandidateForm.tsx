@@ -5,6 +5,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { Dialog, Transition } from '@headlessui/react'
 import { Fragment } from 'react'
 import { useToast } from './toast/ToastContainer' // adjust path if needed
+import { apiUrl } from '../api'
 
 interface FormData {
   basics: {
@@ -48,13 +49,16 @@ export default function CandidateForm() {
 
   const [formData, setFormData] = useState<FormData | null>(null)
   const [rawText, setRawText] = useState<string>('')
-  const [resumeId, setResumeId] = useState<string>('') // ← will be set after save
+  const [resumeId, setResumeId] = useState<string>('')
   const [generating, setGenerating] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [candidateSaved, setCandidateSaved] = useState(false)
   const [loading, setLoading] = useState(true)
+
+  // View/Edit mode from Candidates page
+  const [isViewMode, setIsViewMode] = useState(false)
 
   // Modal state for requiredTech
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -66,8 +70,39 @@ export default function CandidateForm() {
   const [phoneError, setPhoneError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (location.state?.parsedData) {
-      const parsed = location.state.parsedData
+    const state = location.state
+
+    // Case 1: Coming from Candidates page "View" button
+    if (state?.candidateData) {
+      const candidate = state.candidateData
+      setIsViewMode(true)
+      setResumeId(candidate.id || '')
+
+      setFormData({
+        basics: {
+          fullName: candidate.basics?.fullName || '',
+          headline: candidate.basics?.headline || '',
+          email: candidate.basics?.email || '',
+          phone: candidate.basics?.phone || '',
+          location: candidate.basics?.location || null,
+          summary: candidate.basics?.summary || '',
+        },
+        skills: candidate.skills?.map((s: any) => s) || [],
+        languages: candidate.languages || [],
+        certifications: candidate.certifications || [],
+        education: candidate.education || [],
+        experience: candidate.experience || [],
+        projects: candidate.projects || [],
+      })
+
+      setRawText(candidate.rawText || candidate.raw || '')
+      setLoading(false)
+      return
+    }
+
+    // Case 2: Coming from upload/parse (original flow)
+    if (state?.parsedData) {
+      const parsed = state.parsedData
       setFormData(parsed)
       const text = parsed?.raw || parsed?.rawText || parsed?.data?.raw || ''
       setRawText(text)
@@ -112,6 +147,7 @@ export default function CandidateForm() {
     key: string,
     value: string | any
   ) => {
+    // No longer blocking changes — allow editing even in view mode
     setFormData(prev => {
       if (!prev) return prev
       const newData = { ...prev }
@@ -145,7 +181,7 @@ export default function CandidateForm() {
     setSuccessMessage(null)
 
     try {
-      const response = await fetch('http://localhost:4000/api/v1/cv-parse/create-parse-cv', {
+      const response = await fetch(apiUrl('cv-parse/create-parse-cv'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -173,7 +209,7 @@ export default function CandidateForm() {
 
       setSuccessMessage('Candidate saved successfully!')
       setCandidateSaved(true)
-      showToast('Candidate profile created!', 'success')
+      showToast('Candidate profile saved/updated!', 'success')
     } catch (err: any) {
       const errMsg = err.message || 'Failed to save candidate'
       setError(errMsg)
@@ -211,7 +247,7 @@ export default function CandidateForm() {
     setIsModalOpen(false)
 
     try {
-      const response = await fetch('http://localhost:4000/api/v1/interview/generate-interview', {
+      const response = await fetch(apiUrl('interview/generate-interview'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -232,8 +268,7 @@ export default function CandidateForm() {
 
       const generatedQuestions = Array.isArray(result)
         ? result
-        : result.data?.interviewQuestions ||
-          []
+        : result.data?.interviewQuestions || []
 
       if (!Array.isArray(generatedQuestions) || generatedQuestions.length === 0) {
         showToast('No questions returned from API', 'error')
@@ -251,7 +286,6 @@ export default function CandidateForm() {
       showToast('Interview questions generated successfully!', 'success')
     } catch (err: any) {
       const errMsg = err.message || 'Failed to generate questions'
-      // setError('Interview question generation failed')
       showToast('Interview question generation failed', 'error')
       console.error('Generation error:', errMsg)
     } finally {
@@ -259,12 +293,37 @@ export default function CandidateForm() {
     }
   }
 
-  // const isGenerateDisabled = generating || !rawText.trim() || !!emailError || !!phoneError || !candidateSaved
-
   if (loading) {
     return (
-      <div className="flex h-screen bg-slate-50 items-center justify-center">
-        <div className="text-xl text-gray-600">Loading parsed data...</div>
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-md w-full mx-4">
+          <svg
+            className="animate-spin h-12 w-12 mx-auto mb-6 text-indigo-600"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            />
+          </svg>
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">
+            Loading Candidate Data
+          </h3>
+          <p className="text-gray-600">
+            Please wait while we prepare the form...
+          </p>
+        </div>
       </div>
     )
   }
@@ -291,12 +350,27 @@ export default function CandidateForm() {
 
       <div className="flex-1 p-8 overflow-auto">
         <div className="max-w-5xl mx-auto">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Review Candidate Information
-          </h1>
-          <p className="text-gray-600 mb-8">
-            Review parsed data and save before generating interview questions
-          </p>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800">
+                {isViewMode ? 'View / Edit Candidate' : 'Review Candidate Information'}
+              </h1>
+              <p className="text-gray-600">
+                {isViewMode
+                  ? 'View or edit saved candidate details'
+                  : 'Review parsed data and save before generating interview questions'}
+              </p>
+            </div>
+
+            {isViewMode && (
+              <button
+                onClick={() => navigate('/candidates')}
+                className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+              >
+                Back to Candidates
+              </button>
+            )}
+          </div>
 
           {successMessage && (
             <div className="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg">
@@ -426,7 +500,7 @@ export default function CandidateForm() {
 
             {/* Action Buttons */}
             <div className="flex justify-end pt-6 gap-4">
-              {!candidateSaved && (
+              {!candidateSaved && !isViewMode && (
                 <button
                   type="button"
                   onClick={handleSaveCandidate}
@@ -562,7 +636,7 @@ export default function CandidateForm() {
 
                   <div className="mt-2 space-y-4">
                     <p className="text-gray-600">
-                      Enter the technology stack you want the interview questions to focus on (comma separated):
+                      Enter the technologies/languages you want the interview questions to focus on (comma separated):
                     </p>
 
                     <textarea
@@ -585,7 +659,7 @@ export default function CandidateForm() {
                     )}
 
                     <p className="text-xs text-gray-500">
-                      Tip: Enter one or multiple technologies (e.g. Node.js, React, GraphQL)
+                      Tip: You can enter one or many (e.g. Node.js, React, GraphQL)
                     </p>
                   </div>
 

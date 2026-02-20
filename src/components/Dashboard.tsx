@@ -3,6 +3,7 @@ import Sidebar from './Sidebar'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from './toast/ToastContainer.tsx'
+import { apiUrl } from '../api.ts'
 
 export default function Dashboard() {
   const { showToast } = useToast()
@@ -48,7 +49,7 @@ export default function Dashboard() {
       const formData = new FormData()
       formData.append('media', file)
 
-      const res = await fetch('http://localhost:4000/api/v1/cv-parse/generate-parse-cv', {
+      const res = await fetch(apiUrl('cv-parse/generate-parse-cv'), {
         method: 'POST',
         body: formData,
       })

@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../components/toast/ToastContainer' // Adjust path as per your structure
+import { apiUrl } from '../api'
 
 export default function Register() {
   const [name, setName] = useState('')
@@ -49,7 +50,7 @@ export default function Register() {
     setLoading(true)
 
     try {
-      const response = await fetch('http://localhost:4000/api/v1/auth/register', {
+      const response = await fetch(apiUrl('auth/register'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

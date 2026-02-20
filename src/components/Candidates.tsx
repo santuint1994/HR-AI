@@ -5,9 +5,10 @@ import Sidebar from './Sidebar.tsx'
 import { useToast } from './toast/ToastContainer.tsx'
 import { Transition, Dialog } from '@headlessui/react'
 import { Fragment } from 'react'
+import { apiUrl } from '../api.ts'
 
 interface Candidate {
-  id: string           // This is the resumeId
+  id: string
   createdAt: string
   totalExperience: number
   basics: {
@@ -24,6 +25,7 @@ export default function Candidates() {
 
   const [candidates, setCandidates] = useState<Candidate[]>([])
   const [loading, setLoading] = useState(true)
+  const [viewCandidateLoading, setViewCandidateLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Pagination & search
@@ -68,7 +70,7 @@ export default function Candidates() {
         params.append('search', debouncedSearchTerm.trim())
       }
 
-      const url = `http://localhost:4000/api/v1/candidate/search?${params.toString()}`
+      const url = apiUrl(`candidate/search?${params.toString()}`)
 
       const res = await fetch(url, {
         method: 'GET',
@@ -101,10 +103,42 @@ export default function Candidates() {
     }
   }
 
-  // Fetch when page or debounced search term changes
   useEffect(() => {
     fetchCandidates()
   }, [page, debouncedSearchTerm])
+
+  // Function: View candidate details with loader
+  const handleViewCandidate = async (candidateId: string) => {
+    setViewCandidateLoading(true)
+    try {
+      const res = await fetch(apiUrl(`candidate/${candidateId}`), {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          // Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+        },
+      })
+
+      if (!res.ok) {
+        const errText = await res.text()
+        throw new Error(`Failed to fetch candidate: ${res.status} - ${errText}`)
+      }
+
+      const candidateData = await res.json()
+
+      // Navigate to candidate form with fetched data
+      navigate('/candidate-form', {
+        state: {
+          candidateData,
+          isViewMode: true,
+        },
+      })
+    } catch (err: any) {
+      showToast(err.message || 'Error loading candidate details', 'error')
+    } finally {
+      setViewCandidateLoading(false)
+    }
+  }
 
   const openTechModal = (candidate: Candidate) => {
     setSelectedCandidate(candidate)
@@ -127,11 +161,10 @@ export default function Candidates() {
     setIsModalOpen(false)
 
     try {
-      const res = await fetch('http://localhost:4000/api/v1/interview/generate-interview', {
+      const res = await fetch(apiUrl('interview/generate-interview'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
         },
         body: JSON.stringify({
           resumeId: selectedCandidate.id,
@@ -143,6 +176,7 @@ export default function Candidates() {
         const errText = await res.text()
         console.error(`Failed to generate questions: ${res.status} - ${errText}`)
         showToast('Failed to generate interview questions', 'error')
+        return
       }
 
       const result = await res.json()
@@ -175,7 +209,7 @@ export default function Candidates() {
       <Sidebar />
 
       <div className="flex-1 p-8 overflow-auto">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <h1 className="text-3xl font-bold text-gray-800">Candidates</h1>
 
@@ -256,7 +290,7 @@ export default function Candidates() {
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-4 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
-                        Name
+                        Candidate Name
                       </th>
                       <th className="px-6 py-4 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
                         Email
@@ -268,7 +302,7 @@ export default function Candidates() {
                         Experience (years)
                       </th>
                       <th className="px-6 py-4 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
-                        Skills
+                        Total Skills
                       </th>
                       <th className="px-6 py-4 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
                         Added On
@@ -299,10 +333,17 @@ export default function Candidates() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {new Date(candidate.createdAt).toLocaleDateString()}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-4">
+                          <button
+                            onClick={() => handleViewCandidate(candidate.id)}
+                            disabled={viewCandidateLoading}
+                            className={`text-blue-600 hover:text-blue-800 font-medium ${viewCandidateLoading ? 'opacity-50 cursor-wait' : ''}`}
+                          >
+                            {viewCandidateLoading ? 'Loading...' : 'View'}
+                          </button>
                           <button
                             onClick={() => openTechModal(candidate)}
-                            className="text-indigo-600 hover:text-indigo-900 font-medium"
+                            className="text-indigo-600 hover:text-indigo-800 font-medium"
                           >
                             Generate Interview
                           </button>
@@ -345,6 +386,33 @@ export default function Candidates() {
           )}
         </div>
       </div>
+
+      {/* Full-page loader while fetching single candidate (View button) */}
+      {viewCandidateLoading && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-md w-full mx-4">
+            <svg
+              className="animate-spin h-12 w-12 mx-auto mb-6 text-indigo-600"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
+            </svg>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+              Loading Candidate Details
+            </h3>
+            <p className="text-gray-600">
+              Fetching candidate information, please wait...
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Modal for requiredTech */}
       <Transition appear show={isModalOpen} as={Fragment}>
